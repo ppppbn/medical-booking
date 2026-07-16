@@ -48,6 +48,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchAppointmentStatistics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.role]);
 
   const fetchAppointmentStatistics = async () => {

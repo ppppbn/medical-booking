@@ -42,7 +42,7 @@ const theme = createTheme({
 
 // App Routes component
 const AppRoutes: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
 
   const getDefaultDashboard = () => {
     if (!user) return '/login';

@@ -27,18 +27,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Placeholder logic until TSK-402
       console.log('Login attempt:', email);
       throw new Error('Not implemented');
-    } catch (error) {
-      throw error;
-    }
   };
 
   const register = async (userData: RegisterRequest) => {
       // Placeholder logic until TSK-402
       console.log('Register attempt:', userData);
       throw new Error('Not implemented');
-    } catch (error) {
-      throw error;
-    }
   };
 
   const logout = () => {
