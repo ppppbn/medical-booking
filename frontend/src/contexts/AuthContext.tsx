@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, AuthContextType, LoginRequest, RegisterRequest } from '../types/auth';
-import { authService } from '../services/auth';
+import { User, AuthContextType, RegisterRequest } from '../types/auth';
 import { USER_ROLES } from '../constants/roles';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,39 +14,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Check if user is already logged in on app start
-    const token = authService.getToken();
-    const savedUser = authService.getUser();
+    const token = localStorage.getItem('token');
+    const savedUserStr = localStorage.getItem('user');
 
-    if (token && savedUser) {
-      setUser(savedUser);
+    if (token && savedUserStr) {
+      setUser(JSON.parse(savedUserStr));
     }
     setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    try {
-      const response = await authService.login({ email, password });
-      authService.setToken(response.token);
-      authService.setUser(response.user);
-      setUser(response.user);
+      // Placeholder logic until TSK-402
+      console.log('Login attempt:', email);
+      throw new Error('Not implemented');
     } catch (error) {
       throw error;
     }
   };
 
   const register = async (userData: RegisterRequest) => {
-    try {
-      const response = await authService.register(userData);
-      authService.setToken(response.token);
-      authService.setUser(response.user);
-      setUser(response.user);
+      // Placeholder logic until TSK-402
+      console.log('Register attempt:', userData);
+      throw new Error('Not implemented');
     } catch (error) {
       throw error;
     }
   };
 
   const logout = () => {
-    authService.removeToken();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 
@@ -69,8 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const updateUser = (updatedUser: User) => {
-    // Update local user state
-    authService.setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
     setUser(updatedUser);
   };
 

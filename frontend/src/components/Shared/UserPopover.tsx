@@ -164,6 +164,10 @@ const UserPopover: React.FC<UserPopoverProps> = ({ isCollapsed }) => {
           <PersonIcon sx={{ mr: 2, fontSize: '1.25rem' }} />
           <Typography variant="body2">Tài khoản</Typography>
         </MenuItem>
+        <MenuItem onClick={handleSettings} sx={{ py: 1.5 }}>
+          <SettingsIcon sx={{ mr: 2, fontSize: '1.25rem' }} />
+          <Typography variant="body2">Cài đặt</Typography>
+        </MenuItem>
         <Divider sx={{ my: 0.5 }} />
         <MenuItem onClick={handleLogout} sx={{ py: 1.5, color: 'error.main' }}>
           <LogoutIcon sx={{ mr: 2, fontSize: '1.25rem' }} />

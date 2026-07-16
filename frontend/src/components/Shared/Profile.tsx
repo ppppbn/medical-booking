@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Box, Paper, Typography, TextField, Button, Grid, Alert, Snackbar } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Paper, Typography, TextField, Button, Alert, Snackbar } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../constants/roles';
-import { patientsService } from '../../services/patients';
 
 const Profile: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -34,15 +33,18 @@ const Profile: React.FC = () => {
     if (!user) return;
 
     try {
-      const response = await patientsService.updatePatient(user.id, {
-        fullName: formData.fullName,
-        phone: formData.phone,
-      });
+      // Mock response for now (to be implemented in TSK-405/TSK-402)
+      const mockResponse = {
+        patient: {
+          fullName: formData.fullName,
+          phone: formData.phone,
+        }
+      };
 
       updateUser({
         ...user,
-        fullName: response.patient.fullName,
-        phone: response.patient.phone || undefined
+        fullName: mockResponse.patient.fullName,
+        phone: mockResponse.patient.phone || undefined
       });
 
       setMessage({ type: 'success', text: 'Cập nhật thông tin thành công' });

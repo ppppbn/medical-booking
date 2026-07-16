@@ -2,7 +2,8 @@
 export const USER_ROLES = {
   PATIENT: 'PATIENT',
   DOCTOR: 'DOCTOR',
-  ADMIN: 'ADMIN'
+  ADMIN: 'ADMIN',
+  STAFF: 'STAFF'
 } as const;
 
 // Appointment status constants

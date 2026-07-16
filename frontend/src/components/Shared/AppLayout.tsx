@@ -25,7 +25,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         sx={{
           flexGrow: 1,
           transition: 'margin-left 0.3s ease-in-out',
-          marginLeft: '64px', // Start with collapsed width
         }}
       >
         {children}

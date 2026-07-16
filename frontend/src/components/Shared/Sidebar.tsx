@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
   Drawer,
-  List,
   ListItem,
   ListItemButton,
   ListItemIcon,
@@ -11,19 +9,12 @@ import {
   IconButton,
   Typography,
   Box,
-  Collapse,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
-  People as PeopleIcon,
-  MedicalServices as MedicalIcon,
-  Analytics as AnalyticsIcon,
-  Event as EventIcon,
-  Folder as FolderIcon,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   LocalHospital as HospitalIcon,
-  Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../constants/roles';

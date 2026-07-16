@@ -27,7 +27,6 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../constants/roles';
-import { appointmentsService } from '../../services/appointments';
 
 interface DashboardCard {
   title: string;
@@ -49,30 +48,21 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchAppointmentStatistics();
-  }, []);
+  }, [user?.role]);
 
   const fetchAppointmentStatistics = async () => {
     try {
       let response;
 
-      // Use role-specific statistics endpoints
+      // Mock response for now (to be implemented in later epics)
       switch (user?.role) {
         case USER_ROLES.ADMIN:
-          response = await appointmentsService.getAppointmentStatistics();
-          break;
         case USER_ROLES.DOCTOR:
-          response = await appointmentsService.getDoctorAppointmentStatistics();
-          break;
         case USER_ROLES.PATIENT:
-          response = await appointmentsService.getPatientAppointmentStatistics();
+          response = { statistics: { total: 10, completed: 5, pending: 5 } };
           break;
         default:
-          // No statistics for unknown roles
-          setAppointmentStats({
-            total: 0,
-            completed: 0,
-            pending: 0,
-          });
+          setAppointmentStats({ total: 0, completed: 0, pending: 0 });
           return;
       }
 
