@@ -230,21 +230,6 @@ const Login: React.FC = () => {
             </Typography>
           </Box>
 
-          {/* Temporary Helper Box */}
-          <Box sx={{ mt: 4, p: 2, backgroundColor: 'rgba(59, 130, 246, 0.05)', borderRadius: 2, border: '1px dashed', borderColor: 'primary.light' }}>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
-              Dành cho thử nghiệm:
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              • Bệnh nhân: patient1@example.com / password123
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              • Bác sĩ: doctor1@hospital.vn / password123
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              • Admin: admin1@hospital.vn / password123
-            </Typography>
-          </Box>
         </Paper>
       </Box>
     </Box>
