@@ -177,6 +177,7 @@ const Login: React.FC = () => {
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
+                      aria-label="toggle password visibility"
                       onClick={() => setShowPassword(!showPassword)}
                       edge="end"
                       size="small"
