@@ -16,6 +16,7 @@ import {
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   LocalHospital as HospitalIcon,
+  CalendarMonth as CalendarMonthIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../constants/roles';
@@ -57,7 +58,7 @@ const sidebarGroups: SidebarGroup[] = [
     roles: [USER_ROLES.PATIENT],
     items: [
       { label: 'Bảng điều khiển', path: '/dashboard', icon: <DashboardIcon /> },
-      // Other patient items will be added in TSK-403
+      { label: 'Đặt lịch khám', path: '/booking', icon: <CalendarMonthIcon /> },
     ],
   },
 ];
