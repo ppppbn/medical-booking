@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthContextType, RegisterRequest } from '../types/auth';
 import { USER_ROLES } from '../constants/roles';
+import { authService } from '../services/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -24,20 +25,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-      // Placeholder logic until TSK-402
-      console.log('Login attempt:', email);
-      throw new Error('Not implemented');
+    try {
+      const response = await authService.login({ email, password });
+      authService.setToken(response.token);
+      authService.setUser(response.user);
+      setUser(response.user);
+    } catch (error) {
+      throw error;
+    }
   };
 
   const register = async (userData: RegisterRequest) => {
-      // Placeholder logic until TSK-402
-      console.log('Register attempt:', userData);
-      throw new Error('Not implemented');
+    try {
+      const response = await authService.register(userData);
+      authService.setToken(response.token);
+      authService.setUser(response.user);
+      setUser(response.user);
+    } catch (error) {
+      throw error;
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    authService.removeToken();
     setUser(null);
   };
 

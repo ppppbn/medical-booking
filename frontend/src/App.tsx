@@ -9,26 +9,63 @@ import Profile from './components/Shared/Profile';
 import Dashboard from './components/Shared/Dashboard';
 import AppLayout from './components/Shared/AppLayout';
 
+// Auth Components
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+
 // Utilities
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Material UI theme with Vietnamese font support
 const theme = createTheme({
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-  },
   palette: {
     primary: {
-      main: '#1976d2',
+      main: '#2563eb',
+      light: '#3b82f6',
+      dark: '#1d4ed8',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#10b981',
+      light: '#34d399',
+      dark: '#059669',
     },
     background: {
-      default: '#f5f5f5',
+      default: '#f8fafc',
+      paper: '#ffffff',
     },
   },
+  typography: {
+    fontFamily: '"Outfit", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: { fontWeight: 700 },
+    h2: { fontWeight: 600 },
+    h3: { fontWeight: 600 },
+    h4: { fontWeight: 600 },
+    h5: { fontWeight: 500 },
+    h6: { fontWeight: 500 },
+    button: { textTransform: 'none', fontWeight: 500 },
+  },
+  shape: {
+    borderRadius: 12,
+  },
   components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
+    },
     MuiDrawer: {
       styleOverrides: {
         paper: {
@@ -50,48 +87,47 @@ const AppRoutes: React.FC = () => {
   };
 
   return (
-    <AppLayout>
-      <Routes>
-        {/* Placeholder Login/Register routes to be implemented in TSK-402 */}
-        <Route
-          path="/login"
-          element={<div className="flex justify-center p-10"><h1 className="text-2xl">Login Page (Pending TSK-402)</h1></div>}
-        />
-        <Route
-          path="/register"
-          element={<div className="flex justify-center p-10"><h1 className="text-2xl">Register Page (Pending TSK-402)</h1></div>}
-        />
+    <Routes>
+      {/* Auth routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
+      {/* Protected routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
               <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Shared routes */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
+      {/* Shared routes */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
               <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-4">Cài đặt</h2>
                 <p className="text-gray-600">Chức năng cài đặt tài khoản và ứng dụng.</p>
               </div>
-            </ProtectedRoute>
-          }
-        />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
         {/* Default redirect */}
         <Route path="/" element={<Navigate to={getDefaultDashboard()} />} />
@@ -115,7 +151,6 @@ const AppRoutes: React.FC = () => {
           }
         />
       </Routes>
-    </AppLayout>
   );
 };
 
