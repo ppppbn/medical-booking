@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  password        String
+  fullName        String
+  phone           String?
+  dateOfBirth     DateTime?
+  address         String?
+  role            String   @default("PATIENT")
+  gender          String?
+  emergencyContact String?
+  emergencyPhone  String?
+  isActive        Boolean  @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  patientAppointments Appointments[] @relation("PatientAppointments")
+  doctor              Doctors?
+  medicalRecords      MedicalRecords[] @relation("PatientMedicalRecords")
+  notifications       Notifications[]
+
+  @@map("users")
+}
+
+model Departments {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  description  String?
+  headDoctorId String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  doctors Doctors[]
+  rooms   Rooms[]
+
+  @@map("departments")
+}
+
+model Doctors {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  departmentId          String?
+  specialization        String
+  licenseNumber         String   @unique
+  experience            Int?
+  bio                   String?
+  education             String?
+  certifications        String?
+  consultationFee       Decimal?
+  consultationDuration  Int?     @default(30) // minutes
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  user            Users           @relation(fields: [userId], references: [id])
+  department      Departments?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  appointments    Appointments[]
+  schedules       DoctorSchedules[]
+  medicalRecords  MedicalRecords[] @relation("DoctorMedicalRecords")
+
+  @@map("doctors")
+}
+
+model Rooms {
+  id           String   @id @default(cuid())
+  departmentId String
+  roomNumber   String   @unique
+  roomType     String   // "CONSULTATION", "EXAMINATION", "PROCEDURE", "SURGERY"
+  capacity     Int      @default(1)
+  equipment    String?  // JSON string of equipment list
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  department   Departments   @relation(fields: [departmentId], references: [id])
+  appointments Appointments[]
+
+  @@map("rooms")
+}
+
+model DoctorSchedules {
+  id           String   @id @default(cuid())
+  doctorId     String
+  dayOfWeek    String   // "MONDAY", "TUESDAY", etc.
+  startTime    String   // Format: "HH:mm"
+  endTime      String   // Format: "HH:mm"
+  slotDuration Int      @default(30) // minutes
+  isActive     Boolean  @default(true)
+  validFrom    DateTime @default(now())
+  validTo      DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  doctor Doctors @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("doctor_schedules")
+}
+
+model Appointments {
+  id                  String   @id @default(cuid())
+  patientId           String
+  doctorId            String
+  roomId              String?
+  appointmentDateTime DateTime // Combined date and time
+  duration            Int      @default(30) // minutes
+  status              String   @default("PENDING")
+  appointmentType     String   @default("CONSULTATION") // "CONSULTATION", "FOLLOW_UP", "EMERGENCY"
+  priority            String   @default("NORMAL") // "LOW", "NORMAL", "HIGH", "URGENT"
+  symptoms            String?
+  notes               String?
+  cancellationReason  String?
+  fee                 Decimal?
+  paymentStatus       String   @default("PENDING") // "PENDING", "PAID", "CANCELLED"
+  reminderSentAt      DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  patient        Users           @relation("PatientAppointments", fields: [patientId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  doctor         Doctors         @relation(fields: [doctorId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  room           Rooms?          @relation(fields: [roomId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  medicalRecords MedicalRecords[]
+  notifications  Notifications[]
+  payment        Payments?
+
+  // For backward compatibility, we'll add computed fields in the application layer
+  // date: appointmentDateTime.toDateString()
+  // time: appointmentDateTime.toTimeString()
+
+  @@map("appointments")
+}
+
+model MedicalRecords {
+  id                    String   @id @default(cuid())
+  patientId             String
+  doctorId              String
+  appointmentId         String?
+  diagnosis             String?
+  treatment             String?
+  prescription          String?
+  testResults           String?
+  followUpInstructions  String?
+  nextAppointmentDate   DateTime?
+  attachments           String?  // JSON string of file paths/URLs
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  patient     Users        @relation("PatientMedicalRecords", fields: [patientId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  doctor      Doctors      @relation("DoctorMedicalRecords", fields: [doctorId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  appointment Appointments? @relation(fields: [appointmentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@map("medical_records")
+}
+
+model Notifications {
+  id            String   @id @default(cuid())
+  userId        String
+  appointmentId String?
+  type          String   // "APPOINTMENT_REMINDER", "APPOINTMENT_CONFIRMED", "APPOINTMENT_CANCELLED", "SYSTEM"
+  title         String
+  message       String
+  channel       String   @default("IN_APP") // "EMAIL", "SMS", "PUSH", "IN_APP"
+  isRead        Boolean  @default(false)
+  scheduledAt   DateTime?
+  sentAt        DateTime?
+  status        String   @default("PENDING") // "PENDING", "SENT", "FAILED"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user        Users        @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  appointment Appointments? @relation(fields: [appointmentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@map("notifications")
+}
+
+model Payments {
+  id            String       @id @default(cuid())
+  appointmentId String       @unique
+  amount        Decimal
+  paymentMethod String       @default("CASH") // "CASH", "TRANSFER", "CARD"
+  paymentStatus String       @default("PENDING") // "PENDING", "SUCCESS", "FAILED"
+  transactionId String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  appointment   Appointments @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
