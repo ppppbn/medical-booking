@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Profile from './components/Shared/Profile';
 import Dashboard from './components/Shared/Dashboard';
 import AppLayout from './components/Shared/AppLayout';
+import BookingFlow from './components/Booking/BookingFlow';
 
 // Auth Components
 import Login from './components/Auth/Login';
@@ -99,6 +100,16 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <AppLayout>
               <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/booking"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <BookingFlow />
             </AppLayout>
           </ProtectedRoute>
         }
