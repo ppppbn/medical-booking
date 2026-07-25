@@ -17,6 +17,8 @@ import {
   ChevronLeft as ChevronLeftIcon,
   LocalHospital as HospitalIcon,
   CalendarMonth as CalendarMonthIcon,
+  People as PeopleIcon,
+  Assignment as AssignmentIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../constants/roles';
@@ -51,6 +53,7 @@ const sidebarGroups: SidebarGroup[] = [
     items: [
       { label: 'Bảng điều khiển', path: '/dashboard', icon: <DashboardIcon /> },
       { label: 'Lịch hẹn', path: '/doctor-appointments', icon: <CalendarMonthIcon /> },
+      { label: 'Danh sách bệnh nhân', path: '/patients', icon: <PeopleIcon /> },
     ],
   },
   {
@@ -59,6 +62,8 @@ const sidebarGroups: SidebarGroup[] = [
     items: [
       { label: 'Bảng điều khiển', path: '/dashboard', icon: <DashboardIcon /> },
       { label: 'Đặt lịch khám', path: '/booking', icon: <CalendarMonthIcon /> },
+      { label: 'Lịch hẹn của tôi', path: '/appointments', icon: <CalendarMonthIcon /> },
+      { label: 'Hồ sơ bệnh án', path: '/my-records', icon: <AssignmentIcon /> },
     ],
   },
 ];

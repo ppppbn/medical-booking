@@ -11,6 +11,8 @@ import AppLayout from './components/Shared/AppLayout';
 import BookingFlow from './components/Booking/BookingFlow';
 import PatientAppointments from './components/Appointments/PatientAppointments';
 import DoctorAppointments from './components/Appointments/DoctorAppointments';
+import PatientRecords from './components/EMR/PatientRecords';
+import DoctorPatients from './components/EMR/DoctorPatients';
 
 // Auth Components
 import Login from './components/Auth/Login';
@@ -132,6 +134,26 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <AppLayout>
               <DoctorAppointments />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-records"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <PatientRecords />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/patients"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <DoctorPatients />
             </AppLayout>
           </ProtectedRoute>
         }
