@@ -50,7 +50,7 @@ const sidebarGroups: SidebarGroup[] = [
     roles: [USER_ROLES.DOCTOR],
     items: [
       { label: 'Bảng điều khiển', path: '/dashboard', icon: <DashboardIcon /> },
-      // Other doctor items will be added in TSK-404
+      { label: 'Lịch hẹn', path: '/doctor-appointments', icon: <CalendarMonthIcon /> },
     ],
   },
   {

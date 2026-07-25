@@ -9,6 +9,8 @@ import Profile from './components/Shared/Profile';
 import Dashboard from './components/Shared/Dashboard';
 import AppLayout from './components/Shared/AppLayout';
 import BookingFlow from './components/Booking/BookingFlow';
+import PatientAppointments from './components/Appointments/PatientAppointments';
+import DoctorAppointments from './components/Appointments/DoctorAppointments';
 
 // Auth Components
 import Login from './components/Auth/Login';
@@ -110,6 +112,26 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <AppLayout>
               <BookingFlow />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/appointments"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <PatientAppointments />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/doctor-appointments"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <DoctorAppointments />
             </AppLayout>
           </ProtectedRoute>
         }
