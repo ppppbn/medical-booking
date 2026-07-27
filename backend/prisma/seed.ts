@@ -77,7 +77,7 @@ async function main() {
   ];
 
   for (const dept of departments) {
-    await prisma.department.upsert({
+    await prisma.departments.upsert({
       where: { id: dept.id },
       update: {},
       create: dept
@@ -85,7 +85,7 @@ async function main() {
   }
 
   // Create sample patients
-  const patient1 = await prisma.user.upsert({
+  const patient1 = await prisma.users.upsert({
     where: { email: 'patient1@example.com' },
     update: {},
     create: {
@@ -98,7 +98,7 @@ async function main() {
     },
   });
 
-  const patient2 = await prisma.user.upsert({
+  const patient2 = await prisma.users.upsert({
     where: { email: 'patient2@example.com' },
     update: {},
     create: {
@@ -121,7 +121,7 @@ async function main() {
       licenseNumber: 'VN2024001',
       experience: 15,
       bio: 'Chuyên gia về bệnh nội khoa với hơn 15 năm kinh nghiệm',
-      departmentId: 'dept-internal-medicine'
+      sId: 'dept-internal-medicine'
     },
     {
       email: 'doctor2@hospital.vn',
@@ -197,7 +197,7 @@ async function main() {
 
   const doctors = [];
   for (const doctorData of doctorsData) {
-    const doctorUser = await prisma.user.upsert({
+    const doctorUser = await prisma.users.upsert({
       where: { email: doctorData.email },
       update: {},
       create: {
@@ -209,7 +209,7 @@ async function main() {
       },
     });
 
-    const doctor = await prisma.doctor.upsert({
+    const doctor = await prisma.doctors.upsert({
       where: { userId: doctorUser.id },
       update: {},
       create: {
@@ -226,7 +226,7 @@ async function main() {
   }
 
   // Create sample admin
-  const admin = await prisma.user.upsert({
+  const admin = await prisma.users.upsert({
     where: { email: 'admin@hospital.vn' },
     update: {},
     create: {
@@ -239,7 +239,7 @@ async function main() {
   });
 
   // Create sample appointments with new schema
-  const appointment1 = await prisma.appointment.upsert({
+  const appointment1 = await prisma.appointments.upsert({
     where: { id: 'sample-appointment-1' },
     update: {},
     create: {
@@ -252,7 +252,7 @@ async function main() {
     },
   });
 
-  const appointment2 = await prisma.appointment.upsert({
+  const appointment2 = await prisma.appointments.upsert({
     where: { id: 'sample-appointment-2' },
     update: {},
     create: {
@@ -286,7 +286,7 @@ async function main() {
   ];
 
   for (const apt of sampleAppointments) {
-    await prisma.appointment.upsert({
+    await prisma.appointments.upsert({
       where: { id: apt.id },
       update: {},
       create: apt,

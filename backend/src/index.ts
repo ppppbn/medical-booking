@@ -5,6 +5,9 @@ import { PrismaClient } from '@prisma/client';
 
 dotenv.config();
 
+// Import routes
+import authRoutes = require('./routes/auth');
+
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 8080;
@@ -12,6 +15,9 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', authRoutes.default);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
