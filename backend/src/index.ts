@@ -9,6 +9,7 @@ dotenv.config();
 import authRoutes = require('./routes/auth');
 import doctorRoutes = require('./routes/doctors');
 import appointmentRoutes = require('./routes/appointments');
+import patientRoutes = require('./routes/patients');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -53,6 +54,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes.default);
 app.use('/api/doctors', doctorRoutes.default);
 app.use('/api/appointments', appointmentRoutes.default);
+app.use('/api/patients', patientRoutes.default);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
