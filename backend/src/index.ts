@@ -8,18 +8,51 @@ dotenv.config();
 // Import routes
 import authRoutes = require('./routes/auth');
 import doctorRoutes = require('./routes/doctors');
+import appointmentRoutes = require('./routes/appointments');
 
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 8080;
 
-app.use(cors());
+// Middleware
+// Configure CORS to allow multiple origins
+const allowedOrigins = [
+  'http://localhost',
+  'http://localhost:3000',
+  'http://localhost:80',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // In development/docker, allow all localhost origins
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        callback(null, true);
+      } else {
+        console.log('Blocked by CORS:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes.default);
 app.use('/api/doctors', doctorRoutes.default);
+app.use('/api/appointments', appointmentRoutes.default);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
