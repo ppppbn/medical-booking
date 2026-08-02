@@ -19,6 +19,8 @@ import {
   CalendarMonth as CalendarMonthIcon,
   People as PeopleIcon,
   Assignment as AssignmentIcon,
+  BarChart as BarChartIcon,
+  MedicalServices as MedicalServicesIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../constants/roles';
@@ -43,8 +45,10 @@ const sidebarGroups: SidebarGroup[] = [
     title: 'Quản trị hệ thống',
     roles: [USER_ROLES.ADMIN],
     items: [
-      { label: 'Bảng điều khiển', path: '/dashboard', icon: <DashboardIcon /> },
-      // Other admin items will be added in TSK-406
+      { label: 'Thống kê', path: '/admin/statistics', icon: <BarChartIcon /> },
+      { label: 'Quản lý Bác sĩ', path: '/admin/doctors', icon: <MedicalServicesIcon /> },
+      { label: 'Quản lý Bệnh nhân', path: '/admin/patients', icon: <PeopleIcon /> },
+      { label: 'Quản lý Lịch hẹn', path: '/admin/appointments', icon: <CalendarMonthIcon /> },
     ],
   },
   {
