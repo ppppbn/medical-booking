@@ -22,6 +22,12 @@ function extractDate(dateTime: Date): Date {
   return date;
 }
 
+// Helper function to get day of week string ("MONDAY", "TUESDAY", etc.)
+function getDayOfWeekString(date: Date): string {
+  const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  return days[date.getDay()];
+}
+
 // Type for backward compatibility
 type AppointmentWithDateTimeFields = Appointment & {
   date: Date;
@@ -375,7 +381,7 @@ export class AppointmentRepository {
     status?: string;
   }): Promise<AppointmentWithDateTimeFields> {
     const appointmentDateTime = combineDateTime(data.date, data.time);
-    
+
     const appointment = await this.prisma.appointments.create({
       data: {
         patientId: data.patientId,
@@ -413,6 +419,53 @@ export class AppointmentRepository {
         fullName: appointment.doctor.user.fullName
       }
     };
+  }
+
+  // Hỗ trợ đặt lịch lặp lại (Recurring Appointments)
+  async createRecurring(data: {
+    patientId: string;
+    doctorId: string;
+    startDate: Date;
+    time: string;
+    weeks: number;
+    symptoms?: string;
+    notes?: string;
+  }): Promise<AppointmentWithDateTimeFields[]> {
+    const { patientId, doctorId, startDate, time, weeks, symptoms, notes } = data;
+    const createdAppointments: AppointmentWithDateTimeFields[] = [];
+
+    // First pass: Verify availability for all dates in sequence (Logic chống xung đột lịch lặp lại)
+    const datesToBook: Date[] = [];
+    for (let i = 0; i < weeks; i++) {
+      const targetDate = new Date(startDate);
+      targetDate.setDate(targetDate.getDate() + i * 7);
+      datesToBook.push(targetDate);
+
+      const isDoctorAvailable = await this.checkAvailability(doctorId, targetDate, time);
+      if (!isDoctorAvailable) {
+        throw new Error(`Xung đột lịch bác sĩ vào ngày ${targetDate.toISOString().split('T')[0]} lúc ${time}`);
+      }
+
+      const isPatientAvailable = await this.checkPatientAvailability(patientId, targetDate, time);
+      if (!isPatientAvailable) {
+        throw new Error(`Xung đột lịch bệnh nhân vào ngày ${targetDate.toISOString().split('T')[0]} lúc ${time}`);
+      }
+    }
+
+    // Second pass: Create appointments
+    for (const targetDate of datesToBook) {
+      const appt = await this.create({
+        patientId,
+        doctorId,
+        date: targetDate,
+        time,
+        symptoms,
+        notes: notes ? `${notes} (Lịch lặp lại tuần)` : 'Lịch khám lặp lại định kỳ'
+      });
+      createdAppointments.push(appt);
+    }
+
+    return createdAppointments;
   }
 
   async update(id: string, data: Partial<Appointment>): Promise<AppointmentWithDateTimeFields> {
@@ -455,6 +508,7 @@ export class AppointmentRepository {
     });
   }
 
+  // Logic chống xung đột lịch làm việc / lịch hẹn của Bác sĩ
   async checkAvailability(doctorId: string, date: Date, time: string, excludeAppointmentId?: string): Promise<boolean> {
     const appointmentDateTime = combineDateTime(date, time);
     const whereClause: any = {
@@ -476,23 +530,83 @@ export class AppointmentRepository {
     return count === 0;
   }
 
+  // Logic chống xung đột lịch cá nhân của Bệnh nhân (tránh trùng giờ)
+  async checkPatientAvailability(patientId: string, date: Date, time: string, excludeAppointmentId?: string): Promise<boolean> {
+    const appointmentDateTime = combineDateTime(date, time);
+    const whereClause: any = {
+      patientId,
+      appointmentDateTime,
+      status: {
+        in: [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.CONFIRMED]
+      }
+    };
+
+    if (excludeAppointmentId) {
+      whereClause.id = { not: excludeAppointmentId };
+    }
+
+    const count = await this.prisma.appointments.count({
+      where: whereClause
+    });
+
+    return count === 0;
+  }
+
+  // Sinh khung giờ tự động (Automatic slot generation based on DoctorSchedules and booked appointments)
   async getAvailableSlots(doctorId: string, date: Date): Promise<string[]> {
     if (!date || isNaN(date.getTime())) {
       throw new Error('Invalid date provided');
     }
 
-    const timeSlots = [];
-    const startHour = 8;
-    const endHour = 17;
-    const slotDuration = 30;
+    const dayOfWeek = getDayOfWeekString(date);
 
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += slotDuration) {
-        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        timeSlots.push(timeString);
+    // 1. Query doctor default working schedules for this day of week
+    const doctorSchedules = await this.prisma.doctorSchedules.findMany({
+      where: {
+        doctorId,
+        dayOfWeek,
+        isActive: true
+      },
+      orderBy: { startTime: 'asc' }
+    });
+
+    const timeSlots: string[] = [];
+
+    if (doctorSchedules.length > 0) {
+      // Automatically generate time slots from DoctorSchedules
+      for (const schedule of doctorSchedules) {
+        const [startH, startM] = schedule.startTime.split(':').map(Number);
+        const [endH, endM] = schedule.endTime.split(':').map(Number);
+        const duration = schedule.slotDuration || 30;
+
+        let currentMinutes = startH * 60 + startM;
+        const endMinutes = endH * 60 + endM;
+
+        while (currentMinutes + duration <= endMinutes) {
+          const h = Math.floor(currentMinutes / 60);
+          const m = currentMinutes % 60;
+          const timeString = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+          if (!timeSlots.includes(timeString)) {
+            timeSlots.push(timeString);
+          }
+          currentMinutes += duration;
+        }
+      }
+    } else {
+      // Fallback standard working hours (8:00 - 17:00, 30 min intervals)
+      const startHour = 8;
+      const endHour = 17;
+      const slotDuration = 30;
+
+      for (let hour = startHour; hour < endHour; hour++) {
+        for (let minute = 0; minute < 60; minute += slotDuration) {
+          const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          timeSlots.push(timeString);
+        }
       }
     }
 
+    // 2. Query booked appointments for this doctor on this target date
     const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const bookedAppointments = await this.prisma.appointments.findMany({
       where: {
