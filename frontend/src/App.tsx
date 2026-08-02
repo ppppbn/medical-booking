@@ -13,6 +13,10 @@ import PatientAppointments from './components/Appointments/PatientAppointments';
 import DoctorAppointments from './components/Appointments/DoctorAppointments';
 import PatientRecords from './components/EMR/PatientRecords';
 import DoctorPatients from './components/EMR/DoctorPatients';
+import AdminStatistics from './components/Admin/Statistics';
+import ManageDoctors from './components/Admin/ManageDoctors';
+import ManagePatients from './components/Admin/ManagePatients';
+import ManageAppointments from './components/Admin/ManageAppointments';
 
 // Auth Components
 import Login from './components/Auth/Login';
@@ -154,6 +158,46 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <AppLayout>
               <DoctorPatients />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/statistics"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <AdminStatistics />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/doctors"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ManageDoctors />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/patients"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ManagePatients />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/appointments"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ManageAppointments />
             </AppLayout>
           </ProtectedRoute>
         }
