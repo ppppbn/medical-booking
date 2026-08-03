@@ -12,6 +12,8 @@ import appointmentRoutes = require('./routes/appointments');
 import patientRoutes = require('./routes/patients');
 import paymentRoutes = require('./routes/payments');
 import { ReminderService } from './services/ReminderService';
+import swaggerUi = require('swagger-ui-express');
+import { swaggerSpec } from './config/swagger';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -60,6 +62,9 @@ app.use('/api/appointments', appointmentRoutes.default);
 app.use('/api/patients', patientRoutes.default);
 app.use('/api/payments', paymentRoutes.default);
 
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API is running' });
@@ -74,6 +79,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`📚 Swagger API Documentation available at http://localhost:${PORT}/api-docs`);
   reminderService.startReminderScheduler();
 });
 
