@@ -35,10 +35,22 @@ jobs:
       with:
         terraform_wrapper: false
 
+    - name: Ensure S3 Bucket Exists
+      run: |
+        BUCKET_NAME="medbooking-tfstate-$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')-${{ env.AWS_REGION }}"
+        echo "Checking if bucket $BUCKET_NAME exists..."
+        if ! aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+          echo "Bucket does not exist. Creating..."
+          aws s3api create-bucket --bucket "$BUCKET_NAME" --region ${{ env.AWS_REGION }} --create-bucket-configuration LocationConstraint=${{ env.AWS_REGION }}
+          # Enable versioning for terraform state
+          aws s3api put-bucket-versioning --bucket "$BUCKET_NAME" --versioning-configuration Status=Enabled
+        fi
+        echo "TF_BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
+
     - name: Terraform Init
       run: |
         terraform init \
-          -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+          -backend-config="bucket=${{ env.TF_BUCKET_NAME }}" \
           -backend-config="key=medical-booking/terraform.tfstate" \
           -backend-config="region=${{ env.AWS_REGION }}"
 
