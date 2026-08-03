@@ -39,6 +39,11 @@ router.get('/stats/specialization-performance', authenticateToken, authorizeRole
   appointmentsController.getSpecializationPerformance(req, res)
 );
 
+// Trigger automatic appointment reminders check (protected - admin only)
+router.post('/reminders/trigger', authenticateToken, authorizeRoles(USER_ROLES.ADMIN), (req, res) =>
+  appointmentsController.triggerReminders(req, res)
+);
+
 // Get appointment by ID (protected - participants can access their own appointments)
 router.get('/:id', authenticateToken, (req, res) => appointmentsController.getAppointment(req, res));
 

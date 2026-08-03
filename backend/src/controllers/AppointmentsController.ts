@@ -4,18 +4,21 @@ import { DoctorRepository } from '../repositories/DoctorRepository';
 import { MedicalRecordRepository } from '../repositories/MedicalRecordRepository';
 import { USER_ROLES, APPOINTMENT_STATUS } from '../constants/roles';
 import { EmailService } from '../services/EmailService';
+import { ReminderService } from '../services/ReminderService';
 
 export class AppointmentsController {
   private appointmentRepository: AppointmentRepository;
   private doctorRepository: DoctorRepository;
   private medicalRecordRepository: MedicalRecordRepository;
   private emailService: EmailService;
+  private reminderService: ReminderService;
 
   constructor() {
     this.appointmentRepository = new AppointmentRepository();
     this.doctorRepository = new DoctorRepository();
     this.medicalRecordRepository = new MedicalRecordRepository();
     this.emailService = new EmailService();
+    this.reminderService = new ReminderService();
   }
 
   async getAppointments(req: Request, res: Response): Promise<void> {
@@ -612,6 +615,26 @@ export class AppointmentsController {
       res.json({ performance });
     } catch (error) {
       console.error('Get specialization performance error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async triggerReminders(req: Request, res: Response): Promise<void> {
+    try {
+      if (req.user?.role !== USER_ROLES.ADMIN) {
+        res.status(403).json({ error: 'Truy cập bị từ chối' });
+        return;
+      }
+
+      const result = await this.reminderService.checkAndSendReminders();
+
+      res.json({
+        message: 'Kích hoạt kiểm tra và gửi email nhắc lịch tự động thành công',
+        sentCount: result.sentCount,
+        errors: result.errors
+      });
+    } catch (error) {
+      console.error('Trigger reminders error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

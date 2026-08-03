@@ -11,9 +11,11 @@ import doctorRoutes = require('./routes/doctors');
 import appointmentRoutes = require('./routes/appointments');
 import patientRoutes = require('./routes/patients');
 import paymentRoutes = require('./routes/payments');
+import { ReminderService } from './services/ReminderService';
 
 const app = express();
 const prisma = new PrismaClient();
+const reminderService = new ReminderService();
 const PORT = process.env.PORT || 8080;
 
 // Middleware
@@ -72,6 +74,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
+  reminderService.startReminderScheduler();
 });
 
 // Graceful shutdown
