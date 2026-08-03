@@ -1,0 +1,9 @@
+output "instance_public_ip" {
+  description = "The public IP address of the EC2 instance"
+  value       = aws_instance.medbooking_vps.public_ip
+}
+
+output "ssh_connection_string" {
+  description = "SSH command to connect to the instance"
+  value       = "ssh -i ~/.ssh/${var.key_name}.pem ubuntu@${aws_instance.medbooking_vps.public_ip}"
+}
