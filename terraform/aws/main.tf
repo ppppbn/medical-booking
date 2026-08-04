@@ -24,11 +24,19 @@ resource "aws_security_group" "vps_sg" {
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    description = "SSH"
+    description = "SSH from EC2 Instance Connect"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["3.0.5.32/29"]
+  }
+
+  ingress {
+    description = "SSH from GitHub Actions"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.runner_ip]
   }
 
   ingress {
