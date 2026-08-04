@@ -114,34 +114,14 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Execute Deployment via AWS SSM
+    - name: Prepare Files for Deployment
+      id: prep
       run: |
-        # Write the deploy script locally
-        cat << 'EOF' > deploy_script.sh
-        #!/bin/bash
-        cd /home/ubuntu
+        # Encode docker-compose
+        COMPOSE_B64=$(cat docker-compose.prod.yml | base64 -w 0)
+        echo "compose_b64=$COMPOSE_B64" >> $GITHUB_OUTPUT
         
-        # Wait for cloud-init (user_data) to finish installing docker
-        while [ ! -f /var/lib/cloud/instance/boot-finished ]; do
-          echo "Waiting for cloud-init..."
-          sleep 5
-        done
-        
-        # Force OS to recognize the new 30GB disk size
-        sudo growpart /dev/nvme0n1 1 || true
-        sudo resize2fs /dev/nvme0n1p1 || true
-        sudo growpart /dev/xvda 1 || true
-        sudo resize2fs /dev/xvda1 || true
-        
-        # Clean up any dangling/failed Docker images
-        docker system prune -a -f
-        
-        # Inject the docker-compose file directly
-        cat << 'COMPOSEEOF' > docker-compose.prod.yml
-        $(cat docker-compose.prod.yml)
-        COMPOSEEOF
-        
-        # Create .env file for Docker Compose
+        # Build .env and encode
         cat << 'ENVEOF' > .env
         DB_PASSWORD=${{ secrets.DB_PASSWORD }}
         JWT_SECRET=${{ secrets.JWT_SECRET }}
@@ -158,15 +138,11 @@ jobs:
         REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
         GITHUB_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
         ENVEOF
-        
-        # Log into GHCR
-        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        
-        # Pull and start services
-        docker compose -f docker-compose.prod.yml pull
-        docker compose -f docker-compose.prod.yml up -d
-        EOF
-        
+        ENV_B64=$(cat .env | base64 -w 0)
+        echo "env_b64=$ENV_B64" >> $GITHUB_OUTPUT
+
+    - name: Execute Deployment via AWS SSM
+      run: |
         INSTANCE_ID="${{ needs.terraform.outputs.instance_id }}"
         echo "Waiting for SSM Agent on instance $INSTANCE_ID..."
         
@@ -192,10 +168,27 @@ jobs:
         COMMAND_ID=$(aws ssm send-command \
           --instance-ids "$INSTANCE_ID" \
           --document-name "AWS-RunShellScript" \
-          --comment "Deploy Medical Booking" \
-          --parameters "commands=[\"$(cat deploy_script.sh | jq -Rs . | sed 's/^"//;s/"$//')\"]" \
-          --query "Command.CommandId" \
-          --output text)
+          --parameters '{
+            "commands": [
+              "#!/bin/bash",
+              "set -e",
+              "cd /home/ubuntu",
+              "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do sleep 5; done",
+              "sudo growpart /dev/nvme0n1 1 || true",
+              "sudo resize2fs /dev/nvme0n1p1 || true",
+              "sudo growpart /dev/xvda 1 || true",
+              "sudo resize2fs /dev/xvda1 || true",
+              "docker system prune -a -f",
+              "echo \"${{ steps.prep.outputs.compose_b64 }}\" | base64 -d > docker-compose.prod.yml",
+              "echo \"${{ steps.prep.outputs.env_b64 }}\" | base64 -d > .env",
+              "echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin",
+              "docker compose -f docker-compose.prod.yml pull",
+              "docker compose -f docker-compose.prod.yml up -d"
+            ]
+          }' \
+          --timeout-seconds 600 \
+          --output text \
+          --query "Command.CommandId")
         
         echo "Command ID: $COMMAND_ID"
         echo "Waiting for command to complete..."
