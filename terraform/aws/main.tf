@@ -17,6 +17,33 @@ data "aws_vpc" "default" {
   default = true
 }
 
+# IAM Role for SSM
+resource "aws_iam_role" "ssm_role" {
+  name = "medbooking-ec2-ssm-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_policy" {
+  role       = aws_iam_role.ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "medbooking-ec2-ssm-profile"
+  role = aws_iam_role.ssm_role.name
+}
+
 # Create a Security Group for the VPS
 resource "aws_security_group" "vps_sg" {
   name        = "medbooking_vps_sg"
@@ -95,6 +122,7 @@ resource "aws_instance" "medbooking_vps" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   key_name      = var.key_name
+  iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
 
   vpc_security_group_ids = [aws_security_group.vps_sg.id]
 
