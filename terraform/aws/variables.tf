@@ -16,3 +16,9 @@ variable "key_name" {
   # Replace with your actual key pair name in AWS, or set it via terraform.tfvars
   default     = "my-aws-key"
 }
+
+variable "runner_ip" {
+  description = "Dynamic IP of the GitHub Actions runner for SSH access"
+  type        = string
+  default     = "0.0.0.0/32"
+}
