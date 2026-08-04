@@ -97,6 +97,8 @@ jobs:
         context: ./frontend
         push: true
         tags: ghcr.io/${{ github.repository }}/frontend:latest
+        build-args: |
+          REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
 
   deploy:
     name: 'Deploy to EC2 via SSM'
