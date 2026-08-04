@@ -59,14 +59,6 @@ resource "aws_security_group" "vps_sg" {
   }
 
   ingress {
-    description = "SSH from GitHub Actions"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.runner_ip]
-  }
-
-  ingress {
     description = "HTTP"
     from_port   = 80
     to_port     = 80
