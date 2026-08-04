@@ -61,11 +61,13 @@ jobs:
     - name: Terraform Apply
       run: terraform apply -auto-approve -var="key_name=${{ secrets.AWS_KEY_PAIR_NAME }}" -var="runner_ip=${{ steps.ip.outputs.ipv4 }}/32"
 
-    - name: Get EC2 IP
+    - name: Get EC2 IP & ID
       id: tf_output
       run: |
         IP=$(terraform output -raw instance_public_ip)
+        INSTANCE_ID=$(terraform output -raw instance_id)
         echo "instance_ip=$IP" >> $GITHUB_OUTPUT
+        echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
   build-and-push:
     name: 'Build and Push Docker Images'
@@ -100,7 +102,7 @@ jobs:
         tags: ghcr.io/${{ github.repository }}/frontend:latest
 
   deploy:
-    name: 'Deploy to EC2'
+    name: 'Deploy to EC2 via SSM'
     needs: [terraform, build-and-push]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
@@ -108,65 +110,92 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Prepare Server (Resize Disk & Cleanup)
-      uses: appleboy/ssh-action@v0.1.10
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
       with:
-        host: ${{ needs.terraform.outputs.ec2_ip }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          # Wait for cloud-init (user_data) to finish installing docker
-          while [ ! -f /var/lib/cloud/instance/boot-finished ]; do
-            echo 'Waiting for cloud-init...'
-            sleep 5
-          done
-          
-          # Force OS to recognize the new 30GB disk size
-          sudo growpart /dev/nvme0n1 1 || true
-          sudo resize2fs /dev/nvme0n1p1 || true
-          sudo growpart /dev/xvda 1 || true
-          sudo resize2fs /dev/xvda1 || true
-          
-          # Clean up any dangling/failed Docker images
-          docker system prune -a -f
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
 
-    - name: Copy docker-compose.prod.yml to EC2
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ needs.terraform.outputs.ec2_ip }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "docker-compose.prod.yml"
-        target: "~/"
-
-    - name: Run Docker Compose on EC2
-      uses: appleboy/ssh-action@v0.1.10
-      with:
-        host: ${{ needs.terraform.outputs.ec2_ip }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          # Log into GHCR
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          
-          # Create .env file for Docker Compose
-          cat << EOF > .env
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          JWT_EXPIRES_IN=7d
-          PORT=3000
-          NODE_ENV=production
-          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-          EMAIL_USER=${{ secrets.EMAIL_USER }}
-          EMAIL_PASS=${{ secrets.EMAIL_PASS }}
-          VNP_TMNCODE=${{ secrets.VNP_TMNCODE }}
-          VNP_HASHSECRET=${{ secrets.VNP_HASHSECRET }}
-          VNP_URL=${{ secrets.VNP_URL }}
-          VNP_RETURNURL=${{ secrets.VNP_RETURNURL }}
-          REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
-          GITHUB_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          EOF
-          
-          # Pull and start services
-          docker compose -f docker-compose.prod.yml pull
-          docker compose -f docker-compose.prod.yml up -d
+    - name: Execute Deployment via AWS SSM
+      run: |
+        # Write the deploy script locally
+        cat << 'EOF' > deploy_script.sh
+        #!/bin/bash
+        cd /home/ubuntu
+        
+        # Wait for cloud-init (user_data) to finish installing docker
+        while [ ! -f /var/lib/cloud/instance/boot-finished ]; do
+          echo "Waiting for cloud-init..."
+          sleep 5
+        done
+        
+        # Force OS to recognize the new 30GB disk size
+        sudo growpart /dev/nvme0n1 1 || true
+        sudo resize2fs /dev/nvme0n1p1 || true
+        sudo growpart /dev/xvda 1 || true
+        sudo resize2fs /dev/xvda1 || true
+        
+        # Clean up any dangling/failed Docker images
+        docker system prune -a -f
+        
+        # Inject the docker-compose file directly
+        cat << 'COMPOSEEOF' > docker-compose.prod.yml
+        $(cat docker-compose.prod.yml)
+        COMPOSEEOF
+        
+        # Create .env file for Docker Compose
+        cat << 'ENVEOF' > .env
+        DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+        JWT_SECRET=${{ secrets.JWT_SECRET }}
+        JWT_EXPIRES_IN=7d
+        PORT=3000
+        NODE_ENV=production
+        FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+        EMAIL_USER=${{ secrets.EMAIL_USER }}
+        EMAIL_PASS=${{ secrets.EMAIL_PASS }}
+        VNP_TMNCODE=${{ secrets.VNP_TMNCODE }}
+        VNP_HASHSECRET=${{ secrets.VNP_HASHSECRET }}
+        VNP_URL=${{ secrets.VNP_URL }}
+        VNP_RETURNURL=${{ secrets.VNP_RETURNURL }}
+        REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
+        GITHUB_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+        ENVEOF
+        
+        # Log into GHCR
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        
+        # Pull and start services
+        docker compose -f docker-compose.prod.yml pull
+        docker compose -f docker-compose.prod.yml up -d
+        EOF
+        
+        INSTANCE_ID="${{ needs.terraform.outputs.instance_id }}"
+        echo "Waiting for SSM Agent on instance $INSTANCE_ID..."
+        aws ssm wait instance-online --instance-ids "$INSTANCE_ID"
+        
+        echo "Sending deployment command..."
+        COMMAND_ID=$(aws ssm send-command \
+          --instance-ids "$INSTANCE_ID" \
+          --document-name "AWS-RunShellScript" \
+          --comment "Deploy Medical Booking" \
+          --parameters "commands=[\"$(cat deploy_script.sh | jq -Rs . | sed 's/^"//;s/"$//')\"]" \
+          --query "Command.CommandId" \
+          --output text)
+        
+        echo "Command ID: $COMMAND_ID"
+        echo "Waiting for command to complete..."
+        aws ssm wait command-executed --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" || true
+        
+        # Fetch output
+        echo "--- STDOUT ---"
+        aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --query "StandardOutputContent" --output text
+        
+        echo "--- STDERR ---"
+        aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --query "StandardErrorContent" --output text
+        
+        STATUS=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --query "Status" --output text)
+        if [ "$STATUS" != "Success" ]; then
+          echo "Deployment failed with status $STATUS"
+          exit 1
+        fi
