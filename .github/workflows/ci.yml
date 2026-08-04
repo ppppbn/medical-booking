@@ -126,6 +126,16 @@ jobs:
             sleep 5
           done
           
+          # Force OS to recognize the new 30GB disk size (Terraform expanded the EBS volume, but OS needs to resize filesystem)
+          sudo growpart /dev/nvme0n1 1 || true
+          sudo resize2fs /dev/nvme0n1p1 || true
+          sudo growpart /dev/xvda 1 || true
+          sudo resize2fs /dev/xvda1 || true
+          
+          # Clean up any dangling/failed Docker images that might be taking up space
+          docker system prune -a -f
+          
+          
           # Log into GHCR
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
