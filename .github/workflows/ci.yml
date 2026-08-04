@@ -16,6 +16,7 @@ jobs:
     if: github.event_name == 'push'
     outputs:
       ec2_ip: ${{ steps.tf_output.outputs.instance_ip }}
+      instance_id: ${{ steps.tf_output.outputs.instance_id }}
     defaults:
       run:
         working-directory: ./terraform/aws
