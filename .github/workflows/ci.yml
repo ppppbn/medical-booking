@@ -136,8 +136,11 @@ jobs:
         VNP_URL=${{ secrets.VNP_URL }}
         VNP_RETURNURL=${{ secrets.VNP_RETURNURL }}
         REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
-        GITHUB_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
         ENVEOF
+        
+        REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+        echo "GITHUB_REPOSITORY=$REPO_LOWER" >> .env
+        
         ENV_B64=$(cat .env | base64 -w 0)
         echo "env_b64=$ENV_B64" >> $GITHUB_OUTPUT
 
