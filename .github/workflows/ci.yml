@@ -55,12 +55,8 @@ jobs:
           -backend-config="key=medical-booking/terraform.tfstate" \
           -backend-config="region=${{ env.AWS_REGION }}"
 
-    - name: Get GitHub Runner IP
-      id: ip
-      uses: haythem/public-ip@v1.2
-
     - name: Terraform Apply
-      run: terraform apply -auto-approve -var="key_name=${{ secrets.AWS_KEY_PAIR_NAME }}" -var="runner_ip=${{ steps.ip.outputs.ipv4 }}/32"
+      run: terraform apply -auto-approve -var="key_name=${{ secrets.AWS_KEY_PAIR_NAME }}"
 
     - name: Get EC2 IP & ID
       id: tf_output

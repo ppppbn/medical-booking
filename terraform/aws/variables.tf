@@ -17,8 +17,4 @@ variable "key_name" {
   default     = "my-aws-key"
 }
 
-variable "runner_ip" {
-  description = "Dynamic IP of the GitHub Actions runner for SSH access"
-  type        = string
-  default     = "0.0.0.0/32"
-}
+
