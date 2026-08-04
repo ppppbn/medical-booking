@@ -172,7 +172,24 @@ jobs:
         
         INSTANCE_ID="${{ needs.terraform.outputs.instance_id }}"
         echo "Waiting for SSM Agent on instance $INSTANCE_ID..."
-        aws ssm wait instance-online --instance-ids "$INSTANCE_ID"
+        
+        # Poll until SSM agent is online
+        MAX_WAIT=30
+        COUNT=0
+        while true; do
+          STATUS=$(aws ssm describe-instance-information --instance-information-filter-list key=InstanceIds,valueSet=$INSTANCE_ID --query "InstanceInformationList[0].PingStatus" --output text)
+          if [ "$STATUS" == "Online" ]; then
+            echo "SSM Agent is online!"
+            break
+          fi
+          if [ $COUNT -ge $MAX_WAIT ]; then
+            echo "Timeout waiting for SSM agent"
+            exit 1
+          fi
+          echo "Current status: $STATUS. Retrying in 5s..."
+          sleep 5
+          ((COUNT++))
+        done
         
         echo "Sending deployment command..."
         COMMAND_ID=$(aws ssm send-command \
