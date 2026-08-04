@@ -129,8 +129,23 @@ jobs:
           # Log into GHCR
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
-          # Setup environment variables for docker-compose
-          export GITHUB_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          # Create .env file for Docker Compose
+          cat << EOF > .env
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_EXPIRES_IN=7d
+          PORT=3000
+          NODE_ENV=production
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          EMAIL_USER=${{ secrets.EMAIL_USER }}
+          EMAIL_PASS=${{ secrets.EMAIL_PASS }}
+          VNP_TMNCODE=${{ secrets.VNP_TMNCODE }}
+          VNP_HASHSECRET=${{ secrets.VNP_HASHSECRET }}
+          VNP_URL=${{ secrets.VNP_URL }}
+          VNP_RETURNURL=${{ secrets.VNP_RETURNURL }}
+          REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
+          GITHUB_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          EOF
           
           # Pull and start services
           docker compose -f docker-compose.prod.yml pull

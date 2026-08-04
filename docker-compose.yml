@@ -2,16 +2,15 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15-alpine
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: medbooking_db
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-medbooking}
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${DB_PASSWORD:-superStrongP@ssw0rd}
     ports:
-      - "5432:5432"
+      - "1433:1433"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - sqlserver_data:/var/opt/mssql
     restart: always
 
   backend:
@@ -20,9 +19,18 @@ services:
       dockerfile: Dockerfile
     container_name: medbooking_backend
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-medbooking}?schema=public
+      - DATABASE_URL=sqlserver://db:1433;database=med_booking;user=sa;password=${DB_PASSWORD:-superStrongP@ssw0rd};encrypt=true;trustServerCertificate=true
       - JWT_SECRET=${JWT_SECRET:-super_secret_jwt_key_medbooking}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
       - PORT=3000
+      - NODE_ENV=${NODE_ENV:-development}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:80}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - VNP_TMNCODE=${VNP_TMNCODE}
+      - VNP_HASHSECRET=${VNP_HASHSECRET}
+      - VNP_URL=${VNP_URL}
+      - VNP_RETURNURL=${VNP_RETURNURL}
     ports:
       - "3000:3000"
     depends_on:
@@ -35,7 +43,7 @@ services:
       dockerfile: Dockerfile
     container_name: medbooking_frontend
     environment:
-      - REACT_APP_API_URL=http://localhost:3000/api
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:3000/api}
     ports:
       - "80:80"
     depends_on:
@@ -43,4 +51,4 @@ services:
     restart: always
 
 volumes:
-  postgres_data:
+  sqlserver_data:
