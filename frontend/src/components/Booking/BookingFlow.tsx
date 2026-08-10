@@ -95,10 +95,24 @@ const BookAppointment: React.FC = () => {
       const data: DoctorAvailabilityResponse = await doctorsService.getDoctorAvailability(selectedDoctor.id, dateString);
 
       // Convert available slots to TimeSlot objects
-      const slots: TimeSlot[] = data.availableSlots.map((time: string) => ({
+      let slots: TimeSlot[] = data.availableSlots.map((time: string) => ({
         time,
         available: true
       }));
+
+      const now = new Date();
+      if (selectedDate.getDate() === now.getDate() && 
+          selectedDate.getMonth() === now.getMonth() && 
+          selectedDate.getFullYear() === now.getFullYear()) {
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        slots = slots.filter(slot => {
+          const [slotHour, slotMinute] = slot.time.split(':').map(Number);
+          if (slotHour > currentHour) return true;
+          if (slotHour === currentHour && slotMinute > currentMinute) return true;
+          return false;
+        });
+      }
 
       setAvailableSlots(slots);
     } catch (error) {
@@ -474,41 +488,41 @@ const BookAppointment: React.FC = () => {
           )}
 
           {/* Navigation Buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            mt: 4, 
+            position: 'sticky', 
+            bottom: 0, 
+            bgcolor: 'background.paper', 
+            p: 2, 
+            zIndex: 10,
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            borderRadius: '0 0 8px 8px',
+            mx: -3,
+            mb: -3
+          }}>
             <Button
               disabled={activeStep === 0}
               onClick={handleBack}
               variant="outlined"
+              sx={{ textTransform: 'none', fontWeight: 500 }}
             >
               Quay lại
             </Button>
 
             <Button
               variant="contained"
-              onClick={activeStep === steps.length - 1 ? () => setConfirmationOpen(true) : handleNext}
+              onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
               disabled={!canProceed() || loading}
+              sx={{ textTransform: 'none', fontWeight: 500 }}
             >
               {loading ? <CircularProgress size={20} /> :
                activeStep === steps.length - 1 ? 'Đặt lịch' : 'Tiếp tục'}
             </Button>
           </Box>
         </Paper>
-
-        {/* Confirmation Dialog */}
-        <Dialog open={confirmationOpen} onClose={() => setConfirmationOpen(false)}>
-          <DialogTitle>Xác nhận đặt lịch</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Bạn có chắc chắn muốn đặt lịch khám với thông tin trên không?
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setConfirmationOpen(false)}>Hủy</Button>
-            <Button onClick={handleSubmit} variant="contained" disabled={loading}>
-              {loading ? <CircularProgress size={20} /> : 'Xác nhận'}
-            </Button>
-          </DialogActions>
-        </Dialog>
       </Box>
     </LocalizationProvider>
   );

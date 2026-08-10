@@ -59,7 +59,12 @@ export class EmailService {
               <li style="margin-bottom: 8px;"><strong>Bác sĩ:</strong> ${details.doctorName}</li>
               <li style="margin-bottom: 8px;"><strong>Ngày khám:</strong> ${this.formatDate(details.date)}</li>
               <li style="margin-bottom: 8px;"><strong>Giờ khám:</strong> ${details.time}</li>
-              <li style="margin-bottom: 8px;"><strong>Loại khám:</strong> ${details.type || 'Khám bệnh'}</li>
+              <li style="margin-bottom: 8px;"><strong>Loại khám:</strong> ${
+                details.type === 'CONSULTATION' ? 'Khám mới' :
+                details.type === 'FOLLOW_UP' ? 'Tái khám' :
+                details.type === 'EMERGENCY' ? 'Khám cấp cứu' :
+                details.type || 'Khám bệnh'
+              }</li>
             </ul>
           </div>
 

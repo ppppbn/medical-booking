@@ -593,15 +593,18 @@ export class AppointmentRepository {
         }
       }
     } else {
-      // Fallback standard working hours (8:00 - 17:00, 30 min intervals)
-      const startHour = 8;
-      const endHour = 17;
+      // Fallback standard working hours (7:00 - 11:30 and 13:30 - 16:30, 30 min intervals)
       const slotDuration = 30;
 
-      for (let hour = startHour; hour < endHour; hour++) {
+      for (let hour = 7; hour <= 16; hour++) {
         for (let minute = 0; minute < 60; minute += slotDuration) {
-          const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-          timeSlots.push(timeString);
+          const time = hour * 60 + minute;
+          // Morning: 7:00 to 11:30 (last slot starts at 11:00)
+          // Afternoon: 13:30 to 16:30 (last slot starts at 16:00)
+          if ((time >= 7 * 60 && time <= 11 * 60) || (time >= 13 * 60 + 30 && time <= 16 * 60)) {
+            const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            timeSlots.push(timeString);
+          }
         }
       }
     }

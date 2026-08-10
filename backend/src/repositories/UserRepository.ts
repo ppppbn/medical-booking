@@ -14,6 +14,12 @@ export class UserRepository {
     });
   }
 
+  async findByPhone(phone: string): Promise<User | null> {
+    return this.prisma.users.findFirst({
+      where: { phone }
+    });
+  }
+
   async findById(id: string): Promise<User | null> {
     return this.prisma.users.findUnique({
       where: { id }
