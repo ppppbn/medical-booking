@@ -40,7 +40,7 @@ const Navigation: React.FC = () => {
 
     if (isDoctor) {
       return [
-        { label: 'Bảng điều khiển', path: '/doctor-dashboard' },
+        { label: 'Bảng điều khiển', path: '/dashboard' },
         { label: 'Lịch hẹn', path: '/appointments' },
         { label: 'Bệnh nhân', path: '/patients' },
         ...commonItems,
@@ -49,7 +49,7 @@ const Navigation: React.FC = () => {
 
     if (isPatient) {
       return [
-        { label: 'Bảng điều khiển', path: '/patient-dashboard' },
+        { label: 'Bảng điều khiển', path: '/dashboard' },
         { label: 'Đặt lịch khám', path: '/book-appointment' },
         { label: 'Hồ sơ bệnh án', path: '/my-records' },
         ...commonItems,
@@ -58,7 +58,7 @@ const Navigation: React.FC = () => {
 
     if (isAdmin) {
       return [
-        { label: 'Bảng điều khiển', path: '/admin-dashboard' },
+        { label: 'Bảng điều khiển', path: '/dashboard' },
         { label: 'Quản lý bác sĩ', path: '/manage-doctors' },
         { label: 'Quản lý bệnh nhân', path: '/manage-patients' },
         { label: 'Thống kê', path: '/statistics' },
