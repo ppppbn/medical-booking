@@ -50,6 +50,11 @@ export class AuthController {
         return;
       }
 
+      if (!user.isActive) {
+        res.status(403).json({ error: 'Tài khoản của bạn đã bị vô hiệu hóa' });
+        return;
+      }
+
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         res.status(401).json({ error: 'Invalid credentials' });
@@ -84,11 +89,20 @@ export class AuthController {
         return;
       }
 
-      // Check if user already exists
+      // Check if user already exists by email
       const existingUser = await this.userRepository.findByEmail(email);
       if (existingUser) {
-        res.status(409).json({ error: 'User with this email already exists' });
+        res.status(409).json({ error: 'Email này đã được sử dụng' });
         return;
+      }
+
+      // Check if user already exists by phone
+      if (phone) {
+        const existingPhoneUser = await this.userRepository.findByPhone(phone);
+        if (existingPhoneUser) {
+          res.status(409).json({ error: 'Số điện thoại này đã được sử dụng' });
+          return;
+        }
       }
 
       // Hash password

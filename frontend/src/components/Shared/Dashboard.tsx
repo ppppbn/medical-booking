@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../constants/roles';
+import { appointmentService } from '../../services/appointments';
 
 interface DashboardCard {
   title: string;
@@ -55,12 +56,15 @@ const Dashboard: React.FC = () => {
     try {
       let response;
 
-      // Mock response for now (to be implemented in later epics)
       switch (user?.role) {
         case USER_ROLES.ADMIN:
+          response = await appointmentService.getAppointmentStatistics();
+          break;
         case USER_ROLES.DOCTOR:
+          response = await appointmentService.getDoctorAppointmentStatistics();
+          break;
         case USER_ROLES.PATIENT:
-          response = { statistics: { total: 10, completed: 5, pending: 5 } };
+          response = await appointmentService.getPatientAppointmentStatistics();
           break;
         default:
           setAppointmentStats({ total: 0, completed: 0, pending: 0 });
