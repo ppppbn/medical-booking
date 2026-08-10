@@ -24,6 +24,7 @@ import Register from './components/Auth/Register';
 
 // Utilities
 import ProtectedRoute from './components/ProtectedRoute';
+import { USER_ROLES } from './constants/roles';
 
 // Material UI theme with Vietnamese font support
 const theme = createTheme({
@@ -44,7 +45,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Outfit", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
     h1: { fontWeight: 700 },
     h2: { fontWeight: 600 },
     h3: { fontWeight: 600 },
@@ -125,7 +126,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/appointments"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[USER_ROLES.PATIENT]}>
             <AppLayout>
               <PatientAppointments />
             </AppLayout>
@@ -135,7 +136,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/doctor-appointments"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[USER_ROLES.DOCTOR]}>
             <AppLayout>
               <DoctorAppointments />
             </AppLayout>
@@ -145,7 +146,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/my-records"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[USER_ROLES.PATIENT]}>
             <AppLayout>
               <PatientRecords />
             </AppLayout>
@@ -155,7 +156,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/patients"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[USER_ROLES.DOCTOR]}>
             <AppLayout>
               <DoctorPatients />
             </AppLayout>
@@ -165,7 +166,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/admin/statistics"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
             <AppLayout>
               <AdminStatistics />
             </AppLayout>
@@ -175,7 +176,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/admin/doctors"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
             <AppLayout>
               <ManageDoctors />
             </AppLayout>
@@ -185,7 +186,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/admin/patients"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
             <AppLayout>
               <ManagePatients />
             </AppLayout>
@@ -195,7 +196,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/admin/appointments"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
             <AppLayout>
               <ManageAppointments />
             </AppLayout>

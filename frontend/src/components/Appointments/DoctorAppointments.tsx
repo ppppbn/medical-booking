@@ -113,7 +113,7 @@ const DoctorAppointments: React.FC = () => {
         const today = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
         switch (tabValue) {
           case 'today':
-            return appointment.date === today;
+            return appointment.date.startsWith(today);
           case 'pending':
             return appointment.status === APPOINTMENT_STATUS.PENDING;
           case 'confirmed':

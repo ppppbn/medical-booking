@@ -39,7 +39,7 @@ const UserPopover: React.FC<UserPopoverProps> = ({ isCollapsed }) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/login', { replace: true, state: null });
     handleClose();
   };
 
