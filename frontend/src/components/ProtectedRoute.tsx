@@ -47,17 +47,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Check role-based access if roles are specified
   if (allowedRoles && !hasRole(allowedRoles)) {
     // Determine redirect destination based on user role
-    let redirectPath = '/dashboard'; // default fallback
-
-    if (redirectTo) {
-      redirectPath = redirectTo;
-        } else if (user?.role === USER_ROLES.DOCTOR) {
-          redirectPath = '/doctor-dashboard';
-        } else if (user?.role === USER_ROLES.PATIENT) {
-          redirectPath = '/patient-dashboard';
-        } else if (user?.role === USER_ROLES.ADMIN) {
-          redirectPath = '/admin-dashboard';
-    }
+    const redirectPath = redirectTo || '/dashboard';
 
     return <Navigate to={redirectPath} replace />;
   }
