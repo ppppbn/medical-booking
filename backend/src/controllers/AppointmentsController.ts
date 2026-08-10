@@ -30,7 +30,7 @@ export class AppointmentsController {
       if (req.user?.role === USER_ROLES.DOCTOR) {
         const doctor = await this.doctorRepository.findByUserId(req.user.id);
         if (!doctor) {
-          res.status(404).json({ error: 'Doctor profile not found' });
+          res.status(404).json({ error: 'Không tìm thấy thông tin bác sĩ' });
           return;
         }
         whereClause.doctorId = doctor.id;
@@ -64,7 +64,7 @@ export class AppointmentsController {
       });
     } catch (error) {
       console.error('Get appointments error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -74,7 +74,7 @@ export class AppointmentsController {
       const appointment = await this.appointmentRepository.findById(id);
 
       if (!appointment) {
-        res.status(404).json({ error: 'Appointment not found' });
+        res.status(404).json({ error: 'Không tìm thấy lịch khám' });
         return;
       }
 
@@ -88,14 +88,14 @@ export class AppointmentsController {
       }
 
       if (!isAdmin && !isPatient && !isDoctor) {
-        res.status(403).json({ error: 'Access denied' });
+        res.status(403).json({ error: 'Truy cập bị từ chối' });
         return;
       }
 
       res.json({ appointment });
     } catch (error) {
       console.error('Get appointment error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -105,20 +105,20 @@ export class AppointmentsController {
       const patientId = req.user?.id;
 
       if (!patientId) {
-        res.status(401).json({ error: 'User not authenticated' });
+        res.status(401).json({ error: 'Người dùng chưa được xác thực' });
         return;
       }
 
       if (!doctorId || !date || !time) {
         res.status(400).json({
-          error: 'Doctor ID, date, and time are required'
+          error: 'ID bác sĩ, ngày và giờ khám là bắt buộc'
         });
         return;
       }
 
       const isActive = await this.doctorRepository.isActive(doctorId);
       if (!isActive) {
-        res.status(404).json({ error: 'Doctor not found or inactive' });
+        res.status(404).json({ error: 'Không tìm thấy bác sĩ hoặc tài khoản đã bị vô hiệu hóa' });
         return;
       }
 
@@ -141,7 +141,7 @@ export class AppointmentsController {
           // Gửi email xác nhận cho lịch đầu tiên
           const firstAppt = recurringAppointments[0];
           if (firstAppt?.patient?.email) {
-            await this.emailService.sendAppointmentConfirmation(
+            await this.emailService.sendAppointmentCreatedNotification(
               firstAppt.patient.email,
               firstAppt.patient.fullName,
               {
@@ -187,7 +187,7 @@ export class AppointmentsController {
       });
 
       if (appointment.patient?.email) {
-        await this.emailService.sendAppointmentConfirmation(
+        await this.emailService.sendAppointmentCreatedNotification(
           appointment.patient.email,
           appointment.patient.fullName,
           {
@@ -200,12 +200,12 @@ export class AppointmentsController {
       }
 
       res.status(201).json({
-        message: 'Appointment booked successfully',
+        message: 'Đặt lịch khám thành công',
         appointment
       });
     } catch (error) {
       console.error('Create appointment error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -216,7 +216,7 @@ export class AppointmentsController {
 
       const appointment = await this.appointmentRepository.findByIdBasic(id);
       if (!appointment) {
-        res.status(404).json({ error: 'Appointment not found' });
+        res.status(404).json({ error: 'Không tìm thấy lịch khám' });
         return;
       }
 
@@ -279,7 +279,7 @@ export class AppointmentsController {
       }
 
       if (Object.keys(updateData).length === 0) {
-        res.status(400).json({ error: 'No valid fields to update' });
+        res.status(400).json({ error: 'Không có thông tin hợp lệ để cập nhật' });
         return;
       }
 
@@ -330,12 +330,12 @@ export class AppointmentsController {
       }
 
       res.json({
-        message: 'Appointment updated successfully',
+        message: 'Cập nhật lịch khám thành công',
         appointment: updatedAppointment
       });
     } catch (error) {
       console.error('Update appointment error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -346,7 +346,7 @@ export class AppointmentsController {
 
       const appointment = await this.appointmentRepository.findByIdBasic(id);
       if (!appointment) {
-        res.status(404).json({ error: 'Appointment not found' });
+        res.status(404).json({ error: 'Không tìm thấy lịch khám' });
         return;
       }
 
@@ -359,13 +359,13 @@ export class AppointmentsController {
       const isAdmin = req.user?.role === USER_ROLES.ADMIN;
 
       if (!isPatient && !isDoctor && !isAdmin) {
-        res.status(403).json({ error: 'Access denied' });
+        res.status(403).json({ error: 'Truy cập bị từ chối' });
         return;
       }
 
       const canCancel = await this.appointmentRepository.canCancel(id);
       if (!canCancel) {
-        res.status(400).json({ error: 'Cannot cancel a completed or already cancelled appointment' });
+        res.status(400).json({ error: 'Không thể hủy lịch khám đã hoàn thành hoặc đã bị hủy trước đó' });
         return;
       }
 
@@ -390,12 +390,12 @@ export class AppointmentsController {
       }
 
       res.json({
-        message: 'Appointment cancelled successfully',
+        message: 'Hủy lịch khám thành công',
         appointment: updatedAppointment
       });
     } catch (error) {
       console.error('Cancel appointment error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -405,16 +405,16 @@ export class AppointmentsController {
 
       const appointment = await this.appointmentRepository.findByIdBasic(id);
       if (!appointment) {
-        res.status(404).json({ error: 'Appointment not found' });
+        res.status(404).json({ error: 'Không tìm thấy lịch khám' });
         return;
       }
 
       await this.appointmentRepository.delete(id);
 
-      res.json({ message: 'Appointment deleted successfully' });
+      res.json({ message: 'Xóa lịch khám thành công' });
     } catch (error) {
       console.error('Delete appointment error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -437,7 +437,7 @@ export class AppointmentsController {
       });
     } catch (error) {
       console.error('Get appointment statistics error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -450,7 +450,7 @@ export class AppointmentsController {
 
       const doctor = await this.doctorRepository.findByUserId(req.user.id);
       if (!doctor) {
-        res.status(404).json({ error: 'Doctor profile not found' });
+        res.status(404).json({ error: 'Không tìm thấy thông tin bác sĩ' });
         return;
       }
 
@@ -471,7 +471,7 @@ export class AppointmentsController {
       });
     } catch (error) {
       console.error('Get doctor appointment statistics error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -499,7 +499,7 @@ export class AppointmentsController {
       });
     } catch (error) {
       console.error('Get patient appointment statistics error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -510,14 +510,25 @@ export class AppointmentsController {
         return;
       }
 
+      const { startDate, endDate } = req.query;
+      const dateFilter: any = {};
+      if (startDate) dateFilter.dateFrom = new Date(startDate as string);
+      if (endDate) {
+        const end = new Date(endDate as string);
+        if (typeof endDate === 'string' && endDate.length === 10) {
+          end.setHours(23, 59, 59, 999);
+        }
+        dateFilter.dateTo = end;
+      }
+
       const { doctors } = await this.doctorRepository.findAll();
       const performance: any[] = [];
 
       for (const doctor of doctors) {
         try {
-          const totalAppointments = await this.appointmentRepository.countByDoctor(doctor.id);
-          const completedAppointments = await this.appointmentRepository.countByDoctor(doctor.id, APPOINTMENT_STATUS.COMPLETED);
-          const pendingAppointments = await this.appointmentRepository.countByDoctor(doctor.id, APPOINTMENT_STATUS.PENDING);
+          const totalAppointments = await this.appointmentRepository.countByDoctor(doctor.id, undefined, dateFilter);
+          const completedAppointments = await this.appointmentRepository.countByDoctor(doctor.id, APPOINTMENT_STATUS.COMPLETED, dateFilter);
+          const pendingAppointments = await this.appointmentRepository.countByDoctor(doctor.id, APPOINTMENT_STATUS.PENDING, dateFilter);
 
           const completionRate = totalAppointments > 0 ? (completedAppointments / totalAppointments) * 100 : 0;
 
@@ -540,7 +551,7 @@ export class AppointmentsController {
       res.json({ performance });
     } catch (error) {
       console.error('Get doctor performance error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -551,33 +562,62 @@ export class AppointmentsController {
         return;
       }
 
+      const { startDate, endDate } = req.query;
       const trends: { month: string; appointments: number }[] = [];
 
-      for (let i = 5; i >= 0; i--) {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
-        const year = date.getFullYear();
-        const month = date.getMonth();
+      if (startDate || endDate) {
+        const start = startDate ? new Date(startDate as string) : new Date(new Date().setMonth(new Date().getMonth() - 5));
+        const end = endDate ? new Date(endDate as string) : new Date();
+        if (typeof endDate === 'string' && endDate.length === 10) {
+          end.setHours(23, 59, 59, 999);
+        }
 
-        const startOfMonth = new Date(year, month, 1);
-        const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59);
+        let curr = new Date(start.getFullYear(), start.getMonth(), 1);
+        while (curr <= end) {
+          const year = curr.getFullYear();
+          const month = curr.getMonth();
+          const startOfMonth = new Date(year, month, 1);
+          const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-        const count = await this.appointmentRepository.count({
-          dateFrom: startOfMonth,
-          dateTo: endOfMonth
-        });
+          const dateFrom = startOfMonth < start ? start : startOfMonth;
+          const dateTo = endOfMonth > end ? end : endOfMonth;
 
-        const monthName = `Tháng ${month + 1}/${year}`;
-        trends.push({
-          month: monthName,
-          appointments: count
-        });
+          const count = await this.appointmentRepository.count({ dateFrom, dateTo });
+
+          trends.push({
+            month: `Tháng ${month + 1}/${year}`,
+            appointments: count
+          });
+
+          curr.setMonth(curr.getMonth() + 1);
+        }
+      } else {
+        for (let i = 5; i >= 0; i--) {
+          const date = new Date();
+          date.setMonth(date.getMonth() - i);
+          const year = date.getFullYear();
+          const month = date.getMonth();
+
+          const startOfMonth = new Date(year, month, 1);
+          const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59);
+
+          const count = await this.appointmentRepository.count({
+            dateFrom: startOfMonth,
+            dateTo: endOfMonth
+          });
+
+          const monthName = `Tháng ${month + 1}/${year}`;
+          trends.push({
+            month: monthName,
+            appointments: count
+          });
+        }
       }
 
       res.json({ trends });
     } catch (error) {
       console.error('Get appointment trends error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -588,6 +628,17 @@ export class AppointmentsController {
         return;
       }
 
+      const { startDate, endDate } = req.query;
+      const dateFilter: any = {};
+      if (startDate) dateFilter.dateFrom = new Date(startDate as string);
+      if (endDate) {
+        const end = new Date(endDate as string);
+        if (typeof endDate === 'string' && endDate.length === 10) {
+          end.setHours(23, 59, 59, 999);
+        }
+        dateFilter.dateTo = end;
+      }
+
       const { doctors } = await this.doctorRepository.findAll();
       const specializationStats: { [key: string]: { total: number; completed: number } } = {};
 
@@ -596,8 +647,8 @@ export class AppointmentsController {
           specializationStats[doctor.specialization] = { total: 0, completed: 0 };
         }
 
-        const totalAppointments = await this.appointmentRepository.countByDoctor(doctor.id);
-        const completedAppointments = await this.appointmentRepository.countByDoctor(doctor.id, APPOINTMENT_STATUS.COMPLETED);
+        const totalAppointments = await this.appointmentRepository.countByDoctor(doctor.id, undefined, dateFilter);
+        const completedAppointments = await this.appointmentRepository.countByDoctor(doctor.id, APPOINTMENT_STATUS.COMPLETED, dateFilter);
 
         specializationStats[doctor.specialization].total += totalAppointments;
         specializationStats[doctor.specialization].completed += completedAppointments;
@@ -615,7 +666,7 @@ export class AppointmentsController {
       res.json({ performance });
     } catch (error) {
       console.error('Get specialization performance error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -635,7 +686,7 @@ export class AppointmentsController {
       });
     } catch (error) {
       console.error('Trigger reminders error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 }

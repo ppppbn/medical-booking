@@ -125,7 +125,7 @@ export const patientsService = {
     return response.data;
   },
 
-  async getPatientStatistics(): Promise<{
+  async getPatientStatistics(params?: { startDate?: string; endDate?: string }): Promise<{
     totalPatients: number;
     activePatients: number;
     inactivePatients: number;
@@ -133,7 +133,7 @@ export const patientsService = {
     completedAppointments: number;
     pendingAppointments: number;
   }> {
-    const response = await axiosInstance.get('/patients/admin/statistics');
+    const response = await axiosInstance.get('/patients/admin/statistics', { params });
     return response.data;
   }
 };

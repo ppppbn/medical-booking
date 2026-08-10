@@ -83,6 +83,12 @@ export class DoctorRepository {
     });
   }
 
+  async findByLicenseNumber(licenseNumber: string) {
+    return this.prisma.doctors.findUnique({
+      where: { licenseNumber }
+    });
+  }
+
   async findByIdWithUser(id: string) {
     return this.prisma.doctors.findUnique({
       where: { id },

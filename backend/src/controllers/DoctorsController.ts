@@ -56,7 +56,7 @@ export class DoctorsController {
       });
     } catch (error) {
       console.error('Get doctors error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -67,7 +67,7 @@ export class DoctorsController {
       const doctor = await this.doctorRepository.findById(id);
 
       if (!doctor) {
-        res.status(404).json({ error: 'Doctor not found' });
+        res.status(404).json({ error: 'Không tìm thấy thông tin bác sĩ' });
         return;
       }
 
@@ -91,7 +91,7 @@ export class DoctorsController {
       });
     } catch (error) {
       console.error('Get doctor error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -101,14 +101,14 @@ export class DoctorsController {
       const { date } = req.query;
 
       if (!date) {
-        res.status(400).json({ error: 'Date parameter is required' });
+        res.status(400).json({ error: 'Tham số ngày khám (date) là bắt buộc' });
         return;
       }
 
       // Check if doctor exists and is active
       const isActive = await this.doctorRepository.isActive(id);
       if (!isActive) {
-        res.status(404).json({ error: 'Doctor not found or inactive' });
+        res.status(404).json({ error: 'Không tìm thấy bác sĩ hoặc tài khoản đã bị vô hiệu hóa' });
         return;
       }
 
@@ -116,7 +116,7 @@ export class DoctorsController {
 
       // Validate date
       if (isNaN(targetDate.getTime())) {
-        res.status(400).json({ error: 'Invalid date format. Expected YYYY-MM-DD' });
+        res.status(400).json({ error: 'Định dạng ngày không hợp lệ. Kỳ vọng YYYY-MM-DD' });
         return;
       }
 
@@ -135,7 +135,7 @@ export class DoctorsController {
       });
     } catch (error) {
       console.error('Get doctor availability error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -146,7 +146,7 @@ export class DoctorsController {
 
       // Verify the doctor is accessing their own appointments
       if (req.user?.id !== id) {
-        res.status(403).json({ error: 'Access denied' });
+        res.status(403).json({ error: 'Truy cập bị từ chối' });
         return;
       }
 
@@ -168,19 +168,19 @@ export class DoctorsController {
       });
     } catch (error) {
       console.error('Get doctor appointments error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
   async updateDoctorProfile(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params; // This is the doctor profile ID
-      const { specialization, licenseNumber, experience, bio, fullName } = req.body;
+      const { specialization, licenseNumber, experience, bio, fullName, email, phone } = req.body;
 
       // First, get the doctor to check ownership
       const doctor = await this.doctorRepository.findById(id);
       if (!doctor) {
-        res.status(404).json({ error: 'Doctor not found' });
+        res.status(404).json({ error: 'Không tìm thấy thông tin bác sĩ' });
         return;
       }
 
@@ -189,17 +189,40 @@ export class DoctorsController {
       const isAdmin = req.user?.role === USER_ROLES.ADMIN;
 
       if (!isDoctorUpdatingOwnProfile && !isAdmin) {
-        res.status(403).json({ error: 'Access denied' });
+        res.status(403).json({ error: 'Truy cập bị từ chối' });
         return;
       }
 
+      if (email) {
+        const existingUser = await this.userRepository.findByEmail(email);
+        if (existingUser && existingUser.id !== doctor.userId) {
+          res.status(409).json({ error: 'Email này đã được sử dụng' });
+          return;
+        }
+      }
+
+      if (phone) {
+        const existingPhoneUser = await this.userRepository.findByPhone(phone);
+        if (existingPhoneUser && existingPhoneUser.id !== doctor.userId) {
+          res.status(409).json({ error: 'Số điện thoại này đã được sử dụng' });
+          return;
+        }
+      }
+
+      if (licenseNumber) {
+        const existingLicenseDoctor = await this.doctorRepository.findByLicenseNumber(licenseNumber);
+        if (existingLicenseDoctor && existingLicenseDoctor.id !== id) {
+          res.status(409).json({ error: 'Số giấy phép hành nghề này đã được sử dụng' });
+          return;
+        }
+      }
+
       // Update doctor profile
-      const updateData: any = {
-        specialization,
-        licenseNumber,
-        experience,
-        bio
-      };
+      const updateData: any = {};
+      if (specialization !== undefined) updateData.specialization = specialization;
+      if (licenseNumber !== undefined) updateData.licenseNumber = licenseNumber;
+      if (experience !== undefined) updateData.experience = experience;
+      if (bio !== undefined) updateData.bio = bio;
 
       // If specialization is being changed, update departmentId accordingly
       if (specialization && specialization !== doctor.specialization) {
@@ -211,13 +234,18 @@ export class DoctorsController {
 
       const updatedDoctor = await this.doctorRepository.update(id, updateData);
 
-      // If fullName is provided and user is admin, update the user record as well
-      if (fullName && isAdmin) {
-        await this.userRepository.update(doctor.userId, { fullName });
+      // Update user table if user info (fullName, email, phone) is provided
+      const userUpdateData: any = {};
+      if (fullName !== undefined) userUpdateData.fullName = fullName;
+      if (email !== undefined) userUpdateData.email = email;
+      if (phone !== undefined) userUpdateData.phone = phone;
+
+      if (Object.keys(userUpdateData).length > 0) {
+        await this.userRepository.update(doctor.userId, userUpdateData);
       }
 
       res.json({
-        message: 'Doctor profile updated successfully',
+        message: 'Cập nhật thông tin bác sĩ thành công',
         doctor: {
           id: updatedDoctor.id,
           specialization: updatedDoctor.specialization,
@@ -229,7 +257,7 @@ export class DoctorsController {
       });
     } catch (error) {
       console.error('Update doctor profile error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -240,7 +268,7 @@ export class DoctorsController {
       // Validate required fields
       if (!email || !password || !fullName || !specialization || !licenseNumber) {
         res.status(400).json({
-          error: 'Email, password, fullName, specialization, and licenseNumber are required'
+          error: 'Email, mật khẩu, họ tên, chuyên khoa và số giấy phép hành nghề là bắt buộc'
         });
         return;
       }
@@ -248,7 +276,23 @@ export class DoctorsController {
       // Check if user with this email already exists
       const existingUser = await this.userRepository.findByEmail(email);
       if (existingUser) {
-        res.status(409).json({ error: 'User with this email already exists' });
+        res.status(409).json({ error: 'Email này đã được sử dụng' });
+        return;
+      }
+
+      // Check if user with this phone already exists
+      if (phone) {
+        const existingPhoneUser = await this.userRepository.findByPhone(phone);
+        if (existingPhoneUser) {
+          res.status(409).json({ error: 'Số điện thoại này đã được sử dụng' });
+          return;
+        }
+      }
+
+      // Check if doctor with this license number already exists
+      const existingLicenseDoctor = await this.doctorRepository.findByLicenseNumber(licenseNumber);
+      if (existingLicenseDoctor) {
+        res.status(409).json({ error: 'Số giấy phép hành nghề này đã được sử dụng' });
         return;
       }
 
@@ -275,7 +319,7 @@ export class DoctorsController {
       });
 
       res.status(201).json({
-        message: 'Doctor created successfully',
+        message: 'Tạo thông tin bác sĩ thành công',
         doctor: {
           id: doctor.id,
           userId: doctor.userId,
@@ -290,7 +334,7 @@ export class DoctorsController {
       });
     } catch (error) {
       console.error('Create doctor error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -300,7 +344,7 @@ export class DoctorsController {
 
       // Only admins can toggle doctor status
       if (req.user?.role !== USER_ROLES.ADMIN) {
-        res.status(403).json({ error: 'Access denied. Only admins can change doctor status.' });
+        res.status(403).json({ error: 'Truy cập bị từ chối. Chỉ quản trị viên mới có thể thay đổi trạng thái bác sĩ.' });
         return;
       }
 
@@ -310,15 +354,15 @@ export class DoctorsController {
       if (isCurrentlyActive) {
         // Deactivate the doctor
         await this.doctorRepository.deactivate(id);
-        res.json({ message: 'Doctor deactivated successfully', isActive: false });
+        res.json({ message: 'Vô hiệu hóa tài khoản bác sĩ thành công', isActive: false });
       } else {
         // Activate the doctor
         await this.doctorRepository.activate(id);
-        res.json({ message: 'Doctor activated successfully', isActive: true });
+        res.json({ message: 'Kích hoạt tài khoản bác sĩ thành công', isActive: true });
       }
     } catch (error) {
       console.error('Toggle doctor status error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 }

@@ -22,6 +22,21 @@ function extractDate(dateTime: Date): Date {
   return date;
 }
 
+// Helper function to get today's date range in UTC+7 (Vietnam Time)
+function getTodayRangeUtc7(): { gte: Date; lt: Date } {
+  const now = new Date();
+  const utc7Now = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+  const year = utc7Now.getUTCFullYear();
+  const month = utc7Now.getUTCMonth();
+  const day = utc7Now.getUTCDate();
+
+  // appointmentDateTime lưu dạng ISO UTC (ví dụ: 2026-08-12T07:00:00.000Z cho 07:00 ngày 2026-08-12)
+  const gte = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+  const lt = new Date(Date.UTC(year, month, day, 23, 59, 59, 999));
+
+  return { gte, lt };
+}
+
 // Helper function to get day of week string ("MONDAY", "TUESDAY", etc.)
 function getDayOfWeekString(date: Date): string {
   const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
@@ -73,9 +88,12 @@ export class AppointmentRepository {
 
     if (options?.date) {
       const targetDate = new Date(options.date);
+      const year = targetDate.getUTCFullYear();
+      const month = targetDate.getUTCMonth();
+      const day = targetDate.getUTCDate();
       whereClause.appointmentDateTime = {
-        gte: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()),
-        lt: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1)
+        gte: new Date(Date.UTC(year, month, day, 0, 0, 0, 0)),
+        lt: new Date(Date.UTC(year, month, day, 23, 59, 59, 999))
       };
     }
 
@@ -662,10 +680,7 @@ export class AppointmentRepository {
       }),
       this.prisma.appointments.count({
         where: {
-          appointmentDateTime: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            lt: new Date(new Date().setHours(23, 59, 59, 999))
-          }
+          appointmentDateTime: getTodayRangeUtc7()
         }
       })
     ]);
@@ -714,10 +729,7 @@ export class AppointmentRepository {
       this.prisma.appointments.count({
         where: {
           ...baseWhereClause,
-          appointmentDateTime: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            lt: new Date(new Date().setHours(23, 59, 59, 999))
-          }
+          appointmentDateTime: getTodayRangeUtc7()
         }
       })
     ]);
@@ -766,10 +778,7 @@ export class AppointmentRepository {
       this.prisma.appointments.count({
         where: {
           ...baseWhereClause,
-          appointmentDateTime: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            lt: new Date(new Date().setHours(23, 59, 59, 999))
-          }
+          appointmentDateTime: getTodayRangeUtc7()
         }
       })
     ]);
@@ -816,9 +825,18 @@ export class AppointmentRepository {
     return count > 0;
   }
 
-  async countByDoctor(doctorId: string, status?: string): Promise<number> {
+  async countByDoctor(
+    doctorId: string,
+    status?: string,
+    dateFilter?: { dateFrom?: Date; dateTo?: Date }
+  ): Promise<number> {
     const whereClause: any = { doctorId };
     if (status) whereClause.status = status;
+    if (dateFilter?.dateFrom || dateFilter?.dateTo) {
+      whereClause.appointmentDateTime = {};
+      if (dateFilter.dateFrom) whereClause.appointmentDateTime.gte = dateFilter.dateFrom;
+      if (dateFilter.dateTo) whereClause.appointmentDateTime.lt = dateFilter.dateTo;
+    }
 
     return this.prisma.appointments.count({ where: whereClause });
   }

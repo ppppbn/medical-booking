@@ -145,7 +145,7 @@ export const appointmentsService = {
     return response.data;
   },
 
-  async getDoctorPerformance(): Promise<{
+  async getDoctorPerformance(params?: { startDate?: string; endDate?: string }): Promise<{
     performance: {
       id: string;
       fullName: string;
@@ -156,21 +156,21 @@ export const appointmentsService = {
       completionRate: number;
     }[];
   }> {
-    const response = await axiosInstance.get('/appointments/stats/doctor-performance');
+    const response = await axiosInstance.get('/appointments/stats/doctor-performance', { params });
     return response.data;
   },
 
-  async getAppointmentTrends(): Promise<{
+  async getAppointmentTrends(params?: { startDate?: string; endDate?: string }): Promise<{
     trends: {
       month: string;
       appointments: number;
     }[];
   }> {
-    const response = await axiosInstance.get('/appointments/stats/appointment-trends');
+    const response = await axiosInstance.get('/appointments/stats/appointment-trends', { params });
     return response.data;
   },
 
-  async getSpecializationPerformance(): Promise<{
+  async getSpecializationPerformance(params?: { startDate?: string; endDate?: string }): Promise<{
     performance: {
       specialization: string;
       totalAppointments: number;
@@ -178,7 +178,7 @@ export const appointmentsService = {
       completionRate: number;
     }[];
   }> {
-    const response = await axiosInstance.get('/appointments/stats/specialization-performance');
+    const response = await axiosInstance.get('/appointments/stats/specialization-performance', { params });
     return response.data;
   }
 };
