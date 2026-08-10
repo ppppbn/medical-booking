@@ -25,6 +25,8 @@ interface AuthResponse {
     email: string;
     fullName: string;
     role: string;
+    phone: string | null;
+    address: string | null;
   };
 }
 
@@ -40,13 +42,13 @@ export class AuthController {
       const { email, password }: LoginRequest = req.body;
 
       if (!email || !password) {
-        res.status(400).json({ error: 'Email and password are required' });
+        res.status(400).json({ error: 'Email và mật khẩu không được để trống' });
         return;
       }
 
       const user = await this.userRepository.findByEmail(email);
       if (!user) {
-        res.status(401).json({ error: 'Invalid credentials' });
+        res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không đúng' });
         return;
       }
 
@@ -57,7 +59,7 @@ export class AuthController {
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        res.status(401).json({ error: 'Invalid credentials' });
+        res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không đúng' });
         return;
       }
 
@@ -69,14 +71,16 @@ export class AuthController {
           id: user.id,
           email: user.email,
           fullName: user.fullName,
-          role: user.role
+          role: user.role,
+          phone: user.phone,
+          address: user.address
         }
       };
 
       res.json(response);
     } catch (error) {
       console.error('Login error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -85,7 +89,7 @@ export class AuthController {
       const { email, password, fullName, phone, dateOfBirth, address }: RegisterRequest = req.body;
 
       if (!email || !password || !fullName) {
-        res.status(400).json({ error: 'Email, password, and fullName are required' });
+        res.status(400).json({ error: 'Email, mật khẩu và họ tên là bắt buộc' });
         return;
       }
 
@@ -127,14 +131,16 @@ export class AuthController {
           id: user.id,
           email: user.email,
           fullName: user.fullName,
-          role: user.role
+          role: user.role,
+          phone: user.phone,
+          address: user.address
         }
       };
 
       res.status(201).json(response);
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -142,7 +148,7 @@ export class AuthController {
     try {
       // The user should already be attached by the middleware
       if (!req.user) {
-        res.status(401).json({ error: 'Invalid token' });
+        res.status(401).json({ error: 'Xác thực thất bại' });
         return;
       }
 
@@ -156,7 +162,7 @@ export class AuthController {
       });
     } catch (error) {
       console.error('Token verification error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 

@@ -15,13 +15,8 @@ import {
   Alert,
   Chip,
   Avatar,
-  Divider,
   TextField,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Tabs,
   Tab,
 } from '@mui/material';
@@ -100,9 +95,13 @@ const Statistics: React.FC = () => {
     fetchStatistics();
   }, []);
 
-  const fetchStatistics = async () => {
+  const fetchStatistics = async (range = dateRange) => {
     try {
       setLoading(true);
+
+      const params: { startDate?: string; endDate?: string } = {};
+      if (range.startDate) params.startDate = range.startDate;
+      if (range.endDate) params.endDate = range.endDate;
 
       // Fetch all statistics in parallel
       const [
@@ -113,12 +112,12 @@ const Statistics: React.FC = () => {
         appointmentTrendsData,
         specializationPerformanceData,
       ] = await Promise.all([
-        appointmentsService.getAppointmentStatistics(),
+        appointmentsService.getAppointmentStatistics(params),
         doctorsService.getDoctors(),
-        patientsService.getPatientStatistics(),
-        appointmentsService.getDoctorPerformance(),
-        appointmentsService.getAppointmentTrends(),
-        appointmentsService.getSpecializationPerformance(),
+        patientsService.getPatientStatistics(params),
+        appointmentsService.getDoctorPerformance(params),
+        appointmentsService.getAppointmentTrends(params),
+        appointmentsService.getSpecializationPerformance(params),
       ]);
 
       // Combine all stats
@@ -182,13 +181,13 @@ const Statistics: React.FC = () => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   const handleDateFilter = () => {
-    // TODO: Implement date range filtering
-    fetchStatistics();
+    fetchStatistics(dateRange);
   };
 
   const clearDateFilter = () => {
-    setDateRange({ startDate: '', endDate: '' });
-    fetchStatistics();
+    const emptyRange = { startDate: '', endDate: '' };
+    setDateRange(emptyRange);
+    fetchStatistics(emptyRange);
   };
 
   if (loading) {

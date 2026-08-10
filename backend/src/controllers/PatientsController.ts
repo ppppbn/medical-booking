@@ -44,7 +44,7 @@ export class PatientsController {
       });
     } catch (error) {
       console.error('Get patients error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -70,7 +70,7 @@ export class PatientsController {
       res.json({ patient });
     } catch (error) {
       console.error('Get patient error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -87,6 +87,14 @@ export class PatientsController {
         return;
       }
 
+      if (phone) {
+        const existingPhoneUser = await this.userRepository.findByPhone(phone);
+        if (existingPhoneUser && existingPhoneUser.id !== id) {
+          res.status(409).json({ error: 'Số điện thoại này đã được sử dụng' });
+          return;
+        }
+      }
+
       const updateData: any = {};
       if (fullName !== undefined) updateData.fullName = fullName;
       if (phone !== undefined) updateData.phone = phone;
@@ -96,12 +104,12 @@ export class PatientsController {
       const updatedPatient = await this.userRepository.update(id, updateData);
 
       res.json({
-        message: 'Patient profile updated successfully',
+        message: 'Cập nhật thông tin bệnh nhân thành công',
         patient: updatedPatient
       });
     } catch (error) {
       console.error('Update patient error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -145,7 +153,7 @@ export class PatientsController {
       });
     } catch (error) {
       console.error('Get patient appointments error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -207,7 +215,7 @@ export class PatientsController {
       });
     } catch (error) {
       console.error('Get patient records error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -219,6 +227,12 @@ export class PatientsController {
         res.status(400).json({
           error: 'Email, mật khẩu và họ tên là bắt buộc'
         });
+        return;
+      }
+
+      const isPhoneExist = await this.userRepository.findByPhone(phone);
+      if (isPhoneExist) {
+        res.status(409).json({ error: 'Số điện thoại này đã được sử dụng' });
         return;
       }
 
@@ -241,12 +255,12 @@ export class PatientsController {
       });
 
       res.status(201).json({
-        message: 'Patient created successfully',
+        message: 'Tạo thông tin bệnh nhân thành công',
         patient: newPatient
       });
     } catch (error) {
       console.error('Create patient error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -265,10 +279,10 @@ export class PatientsController {
 
       await this.userRepository.delete(id);
 
-      res.json({ message: 'Patient deactivated successfully' });
+      res.json({ message: 'Vô hiệu hóa tài khoản bệnh nhân thành công' });
     } catch (error) {
       console.error('Deactivate patient error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -303,12 +317,12 @@ export class PatientsController {
         : await this.userRepository.activate(id);
 
       res.json({
-        message: `Patient ${updatedPatient.isActive ? 'activated' : 'deactivated'} successfully`,
+        message: `${updatedPatient.isActive ? 'Kích hoạt' : 'Vô hiệu hóa'} tài khoản bệnh nhân thành công`,
         patient: updatedPatient
       });
     } catch (error) {
       console.error('Toggle patient status error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -335,7 +349,7 @@ export class PatientsController {
       });
     } catch (error) {
       console.error('Get patient statistics error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 }

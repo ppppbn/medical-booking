@@ -109,11 +109,17 @@ const DoctorAppointments: React.FC = () => {
 
       // Filter by tab
       const matchesTab = (() => {
-        const todayDate = new Date();
-        const today = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
+        const now = new Date();
+        const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const todayIso = now.toISOString().split('T')[0];
+
+        const appointmentDateStr = typeof appointment.date === 'string'
+          ? appointment.date.split('T')[0]
+          : (appointment.date ? new Date(appointment.date).toISOString().split('T')[0] : '');
+
         switch (tabValue) {
           case 'today':
-            return appointment.date.startsWith(today);
+            return appointmentDateStr === todayLocal || appointmentDateStr === todayIso;
           case 'pending':
             return appointment.status === APPOINTMENT_STATUS.PENDING;
           case 'confirmed':

@@ -24,7 +24,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
-      return res.status(401).json({ error: 'Access token is required' });
+      return res.status(401).json({ error: 'Mã xác thực token là bắt buộc' });
     }
 
     const secret = process.env.JWT_SECRET as string;
@@ -42,7 +42,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     });
 
     if (!user) {
-      return res.status(401).json({ error: 'User not found' });
+      return res.status(401).json({ error: 'Không tìm thấy người dùng' });
     }
 
     req.user = user;
@@ -50,7 +50,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
 
   } catch (error) {
     console.error('Authentication error:', error);
-    res.status(401).json({ error: 'Invalid or expired token' });
+    res.status(401).json({ error: 'Token không hợp lệ hoặc đã hết hạn' });
   }
 };
 
@@ -58,11 +58,11 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
 export const authorizeRoles = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({ error: 'Yêu cầu xác thực tài khoản' });
     }
 
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions' });
+      return res.status(403).json({ error: 'Truy cập bị từ chối. Bạn không có quyền thực hiện thao tác này' });
     }
 
     next();

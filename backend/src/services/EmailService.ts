@@ -38,12 +38,12 @@ export class EmailService {
     });
   }
 
-  async sendAppointmentConfirmation(
+  async sendAppointmentCreatedNotification(
     to: string,
     patientName: string,
     details: AppointmentDetails
   ): Promise<void> {
-    const subject = 'Xác nhận đặt lịch khám thành công - Med Booking';
+    const subject = 'Xác nhận đặt lịch khám thành công - Bệnh viện Phục hồi chức năng Hà Nội';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
         <div style="background-color: #2563eb; color: #ffffff; padding: 20px; text-align: center;">
@@ -51,7 +51,7 @@ export class EmailService {
         </div>
         <div style="padding: 24px;">
           <p style="font-size: 16px; color: #334155;">Xin chào <strong>${patientName}</strong>,</p>
-          <p style="font-size: 15px; color: #334155; line-height: 1.6;">Cảm ơn bạn đã đặt lịch khám tại Med Booking. Lịch hẹn của bạn đã được xác nhận thành công.</p>
+          <p style="font-size: 15px; color: #334155; line-height: 1.6;">Cảm ơn bạn đã đặt lịch khám tại Bệnh viện Phục hồi chức năng Hà Nội. Lịch hẹn của bạn đã được tạo thành công.</p>
           
           <div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 16px; margin: 20px 0; border-radius: 4px;">
             <h3 style="color: #1e293b; margin-top: 0; font-size: 16px;">Chi tiết lịch hẹn:</h3>
@@ -72,7 +72,7 @@ export class EmailService {
           <p style="font-size: 14px; color: #64748b;">Nếu cần hủy hoặc đổi giờ hẹn, vui lòng thực hiện trên hệ thống trước 2 tiếng.</p>
         </div>
         <div style="background-color: #f1f5f9; padding: 12px; text-align: center; color: #94a3b8; font-size: 12px;">
-          Email này được gửi tự động từ hệ thống Med Booking, vui lòng không trả lời.
+          Email này được gửi tự động từ hệ thống Bệnh viện Phục hồi chức năng Hà Nội, vui lòng không trả lời.
         </div>
       </div>
     `;
@@ -103,22 +103,22 @@ export class EmailService {
 
     switch (status) {
       case 'CANCELLED':
-        subject = 'Thông báo hủy lịch khám - Med Booking';
+        subject = 'Thông báo hủy lịch khám - Bệnh viện Phục hồi chức năng Hà Nội';
         message = 'Lịch khám của bạn đã bị hủy.';
         color = '#ef4444';
         break;
       case 'COMPLETED':
-        subject = 'Cảm ơn bạn đã sử dụng dịch vụ - Med Booking';
+        subject = 'Cảm ơn bạn đã sử dụng dịch vụ - Bệnh viện Phục hồi chức năng Hà Nội';
         message = 'Lịch khám của bạn đã hoàn thành.';
         color = '#10b981';
         break;
       case 'CONFIRMED':
-        subject = 'Lịch khám đã được xác nhận - Med Booking';
+        subject = 'Lịch khám đã được xác nhận - Bệnh viện Phục hồi chức năng Hà Nội';
         message = 'Lịch khám của bạn đã được bác sĩ xác nhận thành công.';
         color = '#2563eb';
         break;
       default:
-        subject = 'Cập nhật trạng thái lịch khám - Med Booking';
+        subject = 'Cập nhật trạng thái lịch khám - Bệnh viện Phục hồi chức năng Hà Nội';
         message = `Trạng thái lịch khám của bạn đã được cập nhật sang: ${status}`;
     }
 
@@ -141,10 +141,10 @@ export class EmailService {
             ${note ? `<p style="margin-top: 12px; font-size: 14px; color: #475569;"><strong>Ghi chú:</strong> ${note}</p>` : ''}
           </div>
 
-          <p style="font-size: 14px; color: #64748b;">Cảm ơn bạn đã tin tưởng dịch vụ của Med Booking.</p>
+          <p style="font-size: 14px; color: #64748b;">Cảm ơn bạn đã tin tưởng dịch vụ của Bệnh viện Phục hồi chức năng Hà Nội.</p>
         </div>
         <div style="background-color: #f1f5f9; padding: 12px; text-align: center; color: #94a3b8; font-size: 12px;">
-          Email này được gửi tự động từ hệ thống Med Booking, vui lòng không trả lời.
+          Email này được gửi tự động từ hệ thống Bệnh viện Phục hồi chức năng Hà Nội, vui lòng không trả lời.
         </div>
       </div>
     `;
@@ -168,7 +168,7 @@ export class EmailService {
     patientName: string,
     details: AppointmentDetails
   ): Promise<void> {
-    const subject = '⏰ Nhắc lịch khám bệnh sắp tới - Med Booking';
+    const subject = '⏰ Nhắc lịch khám bệnh sắp tới - Bệnh viện Phục hồi chức năng Hà Nội';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
         <div style="background-color: #f59e0b; color: #ffffff; padding: 20px; text-align: center;">
@@ -176,7 +176,7 @@ export class EmailService {
         </div>
         <div style="padding: 24px;">
           <p style="font-size: 16px; color: #334155;">Xin chào <strong>${patientName}</strong>,</p>
-          <p style="font-size: 15px; color: #334155; line-height: 1.6;">Đây là email nhắc nhở về lịch khám bệnh sắp tới của bạn tại hệ thống Med Booking.</p>
+          <p style="font-size: 15px; color: #334155; line-height: 1.6;">Đây là email nhắc nhở về lịch khám bệnh sắp tới của bạn tại hệ thống Bệnh viện Phục hồi chức năng Hà Nội.</p>
           
           <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 4px;">
             <h3 style="color: #92400e; margin-top: 0; font-size: 16px;">Chi tiết lịch hẹn:</h3>
@@ -191,7 +191,7 @@ export class EmailService {
           <p style="font-size: 14px; color: #64748b;">Chúc bạn có một buổi khám bệnh thuận lợi và sức khỏe tốt!</p>
         </div>
         <div style="background-color: #f1f5f9; padding: 12px; text-align: center; color: #94a3b8; font-size: 12px;">
-          Email này được gửi tự động từ hệ thống Med Booking, vui lòng không trả lời.
+          Email này được gửi tự động từ hệ thống Bệnh viện Phục hồi chức năng Hà Nội, vui lòng không trả lời.
         </div>
       </div>
     `;

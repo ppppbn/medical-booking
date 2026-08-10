@@ -23,13 +23,13 @@ export class PaymentsController {
       const { appointmentId, fee, returnUrl } = req.body;
 
       if (!appointmentId) {
-        res.status(400).json({ error: 'appointmentId is required' });
+        res.status(400).json({ error: 'ID lịch khám là bắt buộc' });
         return;
       }
 
       const appointment = await this.appointmentRepository.findById(appointmentId);
       if (!appointment) {
-        res.status(404).json({ error: 'Appointment not found' });
+        res.status(404).json({ error: 'Không tìm thấy lịch khám' });
         return;
       }
 
@@ -37,7 +37,7 @@ export class PaymentsController {
       const isAdmin = req.user?.role === USER_ROLES.ADMIN;
       const isPatientOwner = req.user?.id === appointment.patientId;
       if (!isAdmin && !isPatientOwner) {
-        res.status(403).json({ error: 'Access denied' });
+        res.status(403).json({ error: 'Truy cập bị từ chối' });
         return;
       }
 
@@ -71,7 +71,7 @@ export class PaymentsController {
       });
 
       res.json({
-        message: 'VNPay payment URL created successfully',
+        message: 'Tạo đường dẫn thanh toán VNPay thành công',
         paymentId: payment.id,
         appointmentId,
         amount,
@@ -79,7 +79,7 @@ export class PaymentsController {
       });
     } catch (error) {
       console.error('Create VNPay URL error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -148,7 +148,7 @@ export class PaymentsController {
       }
     } catch (error) {
       console.error('VNPay return error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 
@@ -203,14 +203,14 @@ export class PaymentsController {
 
       const payment = await this.paymentRepository.findByAppointmentId(appointmentId);
       if (!payment) {
-        res.status(404).json({ error: 'No payment record found for this appointment' });
+        res.status(404).json({ error: 'Không tìm thấy thông tin thanh toán cho lịch khám này' });
         return;
       }
 
       res.json({ payment });
     } catch (error) {
       console.error('Get payment by appointment error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Lỗi hệ thống, vui lòng thử lại sau' });
     }
   }
 }
