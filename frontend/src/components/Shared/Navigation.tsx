@@ -30,7 +30,7 @@ const Navigation: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/login', { replace: true, state: null });
   };
 
   const getNavigationItems = () => {
