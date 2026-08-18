@@ -115,21 +115,21 @@ const Dashboard: React.FC = () => {
             title: 'Quản lý bác sĩ',
             description: 'Thêm, sửa, xóa thông tin bác sĩ',
             icon: <MedicalIcon />,
-            path: '/manage-doctors',
+            path: '/admin/doctors',
             color: 'primary'
           },
           {
             title: 'Quản lý bệnh nhân',
             description: 'Xem và quản lý thông tin bệnh nhân',
             icon: <PeopleIcon />,
-            path: '/manage-patients',
+            path: '/admin/patients',
             color: 'success'
           },
           {
             title: 'Báo cáo thống kê',
             description: 'Xem báo cáo và thống kê hệ thống',
             icon: <AnalyticsIcon />,
-            path: '/statistics',
+            path: '/admin/statistics',
             color: 'info'
           },
           {
@@ -147,7 +147,7 @@ const Dashboard: React.FC = () => {
             title: 'Lịch hẹn hôm nay',
             description: 'Xem lịch hẹn với bệnh nhân',
             icon: <EventIcon />,
-            path: '/appointments',
+            path: '/doctor-appointments',
             color: 'primary'
           },
           {
@@ -156,13 +156,6 @@ const Dashboard: React.FC = () => {
             icon: <PeopleIcon />,
             path: '/patients',
             color: 'success'
-          },
-          {
-            title: 'Lịch trình làm việc',
-            description: 'Xem và cập nhật lịch làm việc',
-            icon: <ScheduleIcon />,
-            path: '/schedule',
-            color: 'info'
           },
           {
             title: 'Hồ sơ cá nhân',
@@ -179,14 +172,14 @@ const Dashboard: React.FC = () => {
             title: 'Đặt lịch khám',
             description: 'Đặt lịch khám với bác sĩ chuyên khoa',
             icon: <EventIcon />,
-            path: '/book-appointment',
+            path: '/booking',
             color: 'primary'
           },
           {
             title: 'Lịch hẹn của tôi',
             description: 'Xem và quản lý lịch hẹn đã đặt',
             icon: <FolderIcon />,
-            path: '/my-appointments',
+            path: '/appointments',
             color: 'success'
           },
           {

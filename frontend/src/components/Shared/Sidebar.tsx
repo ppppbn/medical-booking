@@ -52,7 +52,7 @@ const sidebarGroups: SidebarGroup[] = [
     ],
   },
   {
-    title: 'Quản lý bệnh nhân',
+    title: 'Cổng thông tin Bác sĩ',
     roles: [USER_ROLES.DOCTOR],
     items: [
       { label: 'Bảng điều khiển', path: '/dashboard', icon: <DashboardIcon /> },
