@@ -390,19 +390,18 @@ const BookAppointment: React.FC = () => {
                   <CircularProgress />
                 </Box>
               ) : (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 1.5 }}>
                   {availableSlots.map((slot) => (
-                    <Box key={slot.time} sx={{ flex: '1 1 120px', minWidth: '120px' }}>
-                      <Button
-                        variant={selectedTime === slot.time ? 'contained' : 'outlined'}
-                        fullWidth
-                        onClick={() => setSelectedTime(slot.time)}
-                        disabled={!slot.available}
-                        sx={{ py: 1.5 }}
-                      >
-                        {slot.time}
-                      </Button>
-                    </Box>
+                    <Button
+                      key={slot.time}
+                      variant={selectedTime === slot.time ? 'contained' : 'outlined'}
+                      fullWidth
+                      onClick={() => setSelectedTime(slot.time)}
+                      disabled={!slot.available}
+                      sx={{ py: 1.5 }}
+                    >
+                      {slot.time}
+                    </Button>
                   ))}
                   {availableSlots.length === 0 && (
                     <Box sx={{ width: '100%' }}>

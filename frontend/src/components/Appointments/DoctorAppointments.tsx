@@ -235,14 +235,18 @@ const DoctorAppointments: React.FC = () => {
     });
   };
 
-  const getAvailableStatusChanges = (currentStatus: string) => {
+  const getAvailableStatusChanges = (appointment: Appointment) => {
     const options = [];
+    const currentStatus = appointment.status;
 
     if (currentStatus === APPOINTMENT_STATUS.PENDING) {
       options.push({ value: APPOINTMENT_STATUS.CONFIRMED, label: 'Xác nhận' });
       options.push({ value: APPOINTMENT_STATUS.CANCELLED, label: 'Hủy' });
     } else if (currentStatus === APPOINTMENT_STATUS.CONFIRMED) {
-      options.push({ value: APPOINTMENT_STATUS.COMPLETED, label: 'Hoàn thành' });
+      const isFuture = new Date(appointment.date) > new Date();
+      if (!isFuture) {
+        options.push({ value: APPOINTMENT_STATUS.COMPLETED, label: 'Hoàn thành' });
+      }
       options.push({ value: APPOINTMENT_STATUS.CANCELLED, label: 'Hủy' });
     }
 
@@ -389,14 +393,14 @@ const DoctorAppointments: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        {getAvailableStatusChanges(appointment.status).length > 0 && (
+                        {getAvailableStatusChanges(appointment).length > 0 && (
                           <IconButton
                             color="primary"
                             size="small"
                             onClick={() => setStatusDialog({
                               open: true,
                               appointment,
-                              newStatus: getAvailableStatusChanges(appointment.status)[0]?.value || '',
+                              newStatus: getAvailableStatusChanges(appointment)[0]?.value || '',
                               diagnosis: '',
                               treatment: '',
                               prescription: '',
@@ -450,8 +454,9 @@ const DoctorAppointments: React.FC = () => {
               value={statusDialog.newStatus}
               onChange={(e) => setStatusDialog(prev => ({ ...prev, newStatus: e.target.value }))}
               label="Trạng thái mới"
+              fullWidth
             >
-              {statusDialog.appointment && getAvailableStatusChanges(statusDialog.appointment.status).map(option => (
+              {statusDialog.appointment && getAvailableStatusChanges(statusDialog.appointment).map(option => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>
@@ -476,6 +481,9 @@ const DoctorAppointments: React.FC = () => {
                 onChange={(e) => setStatusDialog(prev => ({ ...prev, diagnosis: e.target.value }))}
                 placeholder="Nhập chẩn đoán bệnh..."
                 sx={{ mb: 2 }}
+                required={statusDialog.newStatus === APPOINTMENT_STATUS.COMPLETED}
+                error={statusDialog.newStatus === APPOINTMENT_STATUS.COMPLETED && !statusDialog.diagnosis?.trim()}
+                helperText={statusDialog.newStatus === APPOINTMENT_STATUS.COMPLETED && !statusDialog.diagnosis?.trim() ? "Vui lòng nhập chẩn đoán khi hoàn thành khám" : ""}
               />
 
               <TextField
@@ -551,9 +559,9 @@ const DoctorAppointments: React.FC = () => {
           <Button
             onClick={() => statusDialog.appointment && handleUpdateStatus(statusDialog.appointment, statusDialog.newStatus)}
             variant="contained"
-            disabled={!statusDialog.newStatus}
+            disabled={!statusDialog.newStatus || (statusDialog.newStatus === APPOINTMENT_STATUS.COMPLETED && !statusDialog.diagnosis?.trim())}
           >
-            Cập nhật
+            Xác nhận
           </Button>
         </DialogActions>
       </Dialog>

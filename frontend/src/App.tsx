@@ -116,7 +116,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/booking"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[USER_ROLES.PATIENT]}>
             <AppLayout>
               <BookingFlow />
             </AppLayout>

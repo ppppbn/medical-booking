@@ -409,6 +409,11 @@ export class AppointmentsController {
         return;
       }
 
+      if (appointment.status === 'COMPLETED') {
+        res.status(400).json({ error: 'Không thể xóa lịch khám đã hoàn thành' });
+        return;
+      }
+
       await this.appointmentRepository.delete(id);
 
       res.json({ message: 'Xóa lịch khám thành công' });

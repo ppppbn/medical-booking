@@ -575,15 +575,17 @@ const ManageAppointments: React.FC = () => {
                           </Tooltip>
                         </>
                       )}
-                      <Tooltip title="Xóa lịch hẹn">
-                        <IconButton
-                          size="small"
-                          onClick={() => setDeleteDialog({ open: true, appointment })}
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {appointment.status !== APPOINTMENT_STATUS.COMPLETED && (
+                        <Tooltip title="Xóa lịch hẹn">
+                          <IconButton
+                            size="small"
+                            onClick={() => setDeleteDialog({ open: true, appointment })}
+                            color="error"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

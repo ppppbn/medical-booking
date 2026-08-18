@@ -14,6 +14,7 @@ import {
   Avatar,
   Alert,
   CircularProgress,
+  TextField,
 } from '@mui/material';
 import {
   Schedule as ScheduleIcon,
@@ -207,24 +208,19 @@ const DoctorCalendar: React.FC = () => {
               </Select>
             </FormControl>
 
-            <FormControl fullWidth>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 'medium' }}>
-                Chọn ngày
-              </Typography>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                style={{
-                  padding: '12px 16px',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px',
-                  fontSize: '16px',
-                  width: '100%',
-                }}
-                min={new Date().toISOString().split('T')[0]}
-              />
-            </FormControl>
+            <TextField
+              type="date"
+              label="Chọn ngày"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              fullWidth
+              InputLabelProps={{
+                shrink: true,
+              }}
+              inputProps={{
+                min: new Date().toISOString().split('T')[0]
+              }}
+            />
           </Box>
 
           {error && (
@@ -249,7 +245,7 @@ const DoctorCalendar: React.FC = () => {
                       {selectedDoctor.specialization}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      ID: {selectedDoctor.id}
+                      Email: {selectedDoctor.email}
                     </Typography>
                   </Box>
                   <Box sx={{ ml: 'auto', textAlign: 'right' }}>
