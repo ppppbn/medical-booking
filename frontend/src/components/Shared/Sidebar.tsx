@@ -45,6 +45,7 @@ const sidebarGroups: SidebarGroup[] = [
     title: 'Quản trị hệ thống',
     roles: [USER_ROLES.ADMIN],
     items: [
+      { label: 'Bảng điều khiển', path: '/dashboard', icon: <DashboardIcon /> },
       { label: 'Thống kê', path: '/admin/statistics', icon: <BarChartIcon /> },
       { label: 'Quản lý Bác sĩ', path: '/admin/doctors', icon: <MedicalServicesIcon /> },
       { label: 'Quản lý Bệnh nhân', path: '/admin/patients', icon: <PeopleIcon /> },
