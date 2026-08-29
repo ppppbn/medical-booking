@@ -192,6 +192,7 @@ jobs:
               "docker system prune -a -f",
               "echo \"${{ steps.prep.outputs.compose_b64 }}\" | base64 -d > docker-compose.prod.yml",
               "echo \"${{ steps.prep.outputs.env_b64 }}\" | base64 -d > .env",
+              "sudo rm -rf Caddyfile",
               "if [ -n \"${{ steps.prep.outputs.caddy_b64 }}\" ]; then echo \"${{ steps.prep.outputs.caddy_b64 }}\" | base64 -d > Caddyfile; fi",
               "echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin",
               "docker compose -f docker-compose.prod.yml pull",
