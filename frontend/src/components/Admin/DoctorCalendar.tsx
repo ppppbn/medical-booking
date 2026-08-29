@@ -16,6 +16,7 @@ import {
   CircularProgress,
   TextField,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {
   Schedule as ScheduleIcon,
   Event as EventIcon,
@@ -208,18 +209,18 @@ const DoctorCalendar: React.FC = () => {
               </Select>
             </FormControl>
 
-            <TextField
-              type="date"
+            <DatePicker
               label="Chọn ngày"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              fullWidth
-              InputLabelProps={{
-                shrink: true,
+              format="dd/MM/yyyy"
+              value={selectedDate ? new Date(selectedDate) : null}
+              onChange={(newDate: Date | null) => {
+                const dateString = newDate && !isNaN(newDate.getTime()) 
+                  ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
+                  : '';
+                if (dateString) setSelectedDate(dateString);
               }}
-              inputProps={{
-                min: new Date().toISOString().split('T')[0]
-              }}
+              minDate={new Date()}
+              slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
             />
           </Box>
 

@@ -29,6 +29,7 @@ import {
   Tab,
   Divider,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {
   Search as SearchIcon,
   CheckCircle as CheckCircleIcon,
@@ -530,14 +531,17 @@ const DoctorAppointments: React.FC = () => {
                 sx={{ mb: 2 }}
               />
 
-              <TextField
-                fullWidth
+              <DatePicker
                 label="Lịch hẹn tiếp theo"
-                type="date"
-                value={statusDialog.nextAppointmentDate}
-                onChange={(e) => setStatusDialog(prev => ({ ...prev, nextAppointmentDate: e.target.value }))}
-                InputLabelProps={{ shrink: true }}
-                sx={{ mb: 2 }}
+                format="dd/MM/yyyy"
+                value={statusDialog.nextAppointmentDate ? new Date(statusDialog.nextAppointmentDate) : null}
+                onChange={(newDate: Date | null) => {
+                  const dateString = newDate && !isNaN(newDate.getTime()) 
+                    ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
+                    : '';
+                  setStatusDialog(prev => ({ ...prev, nextAppointmentDate: dateString }));
+                }}
+                slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
               />
             </>
           )}

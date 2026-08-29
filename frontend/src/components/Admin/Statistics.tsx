@@ -20,6 +20,7 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {
   BarChart,
   Bar,
@@ -229,21 +230,29 @@ const Statistics: React.FC = () => {
 
             {/* Date Range Filter */}
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <TextField
+              <DatePicker
                 label="Từ ngày"
-                type="date"
-                size="small"
-                value={dateRange.startDate}
-                onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
-                InputLabelProps={{ shrink: true }}
+                format="dd/MM/yyyy"
+                value={dateRange.startDate ? new Date(dateRange.startDate) : null}
+                onChange={(newDate: Date | null) => {
+                  const dateString = newDate && !isNaN(newDate.getTime()) 
+                    ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
+                    : '';
+                  setDateRange({ ...dateRange, startDate: dateString });
+                }}
+                slotProps={{ textField: { size: 'small' } }}
               />
-              <TextField
+              <DatePicker
                 label="Đến ngày"
-                type="date"
-                size="small"
-                value={dateRange.endDate}
-                onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
-                InputLabelProps={{ shrink: true }}
+                format="dd/MM/yyyy"
+                value={dateRange.endDate ? new Date(dateRange.endDate) : null}
+                onChange={(newDate: Date | null) => {
+                  const dateString = newDate && !isNaN(newDate.getTime()) 
+                    ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
+                    : '';
+                  setDateRange({ ...dateRange, endDate: dateString });
+                }}
+                slotProps={{ textField: { size: 'small' } }}
               />
               <Button variant="contained" onClick={handleDateFilter} size="small">
                 Lọc

@@ -25,9 +25,6 @@ import {
   DialogActions,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { vi } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { doctorsService, Doctor, DoctorListResponse, DoctorAvailabilityResponse } from '../../services/doctors';
@@ -234,7 +231,6 @@ const BookAppointment: React.FC = () => {
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={vi}>
       <Box sx={{ padding: { xs: 2, md: 4 }, maxWidth: 1000, margin: '0 auto' }}>
         <Paper 
           elevation={0}
@@ -361,6 +357,7 @@ const BookAppointment: React.FC = () => {
               </Typography>
               <DatePicker
                 label="Ngày khám"
+                format="dd/MM/yyyy"
                 value={selectedDate}
                 onChange={(newDate) => setSelectedDate(newDate)}
                 minDate={new Date()}
@@ -523,7 +520,6 @@ const BookAppointment: React.FC = () => {
           </Box>
         </Paper>
       </Box>
-    </LocalizationProvider>
   );
 };
 
