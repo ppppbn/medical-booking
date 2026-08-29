@@ -123,6 +123,12 @@ jobs:
         COMPOSE_B64=$(cat docker-compose.prod.yml | base64 -w 0)
         echo "compose_b64=$COMPOSE_B64" >> $GITHUB_OUTPUT
         
+        # Encode Caddyfile
+        if [ -f Caddyfile ]; then
+          CADDY_B64=$(cat Caddyfile | base64 -w 0)
+          echo "caddy_b64=$CADDY_B64" >> $GITHUB_OUTPUT
+        fi
+        
         # Build .env and encode
         cat << 'ENVEOF' > .env
         DB_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -186,6 +192,7 @@ jobs:
               "docker system prune -a -f",
               "echo \"${{ steps.prep.outputs.compose_b64 }}\" | base64 -d > docker-compose.prod.yml",
               "echo \"${{ steps.prep.outputs.env_b64 }}\" | base64 -d > .env",
+              "if [ -n \"${{ steps.prep.outputs.caddy_b64 }}\" ]; then echo \"${{ steps.prep.outputs.caddy_b64 }}\" | base64 -d > Caddyfile; fi",
               "echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin",
               "docker compose -f docker-compose.prod.yml pull",
               "docker compose -f docker-compose.prod.yml up -d"
