@@ -50,7 +50,7 @@ interface PatientFormData {
   password: string;
   fullName: string;
   phone: string;
-  dateOfBirth: string;
+  dateOfBirth: Date | null;
   address: string;
 }
 
@@ -76,7 +76,7 @@ const ManagePatients: React.FC = () => {
     password: '',
     fullName: '',
     phone: '',
-    dateOfBirth: '',
+    dateOfBirth: null,
     address: '',
   });
 
@@ -153,7 +153,9 @@ const ManagePatients: React.FC = () => {
     try {
       await patientsService.createPatient({
         ...formData,
-        dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : undefined,
+        dateOfBirth: formData.dateOfBirth && !isNaN(formData.dateOfBirth.getTime())
+          ? `${formData.dateOfBirth.getFullYear()}-${String(formData.dateOfBirth.getMonth() + 1).padStart(2, '0')}-${String(formData.dateOfBirth.getDate()).padStart(2, '0')}T00:00:00.000Z` 
+          : undefined,
       });
       await fetchPatientsAndStatistics();
       setAddDialogOpen(false);
@@ -179,7 +181,9 @@ const ManagePatients: React.FC = () => {
       await patientsService.updatePatient(selectedPatient.id, {
         fullName: formData.fullName,
         phone: formData.phone || undefined,
-        dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : undefined,
+        dateOfBirth: formData.dateOfBirth && !isNaN(formData.dateOfBirth.getTime())
+          ? `${formData.dateOfBirth.getFullYear()}-${String(formData.dateOfBirth.getMonth() + 1).padStart(2, '0')}-${String(formData.dateOfBirth.getDate()).padStart(2, '0')}T00:00:00.000Z` 
+          : undefined,
         address: formData.address || undefined,
       });
       await fetchPatientsAndStatistics();
@@ -239,7 +243,7 @@ const ManagePatients: React.FC = () => {
       password: '',
       fullName: patient.fullName,
       phone: patient.phone || '',
-      dateOfBirth: patient.dateOfBirth ? new Date(patient.dateOfBirth).toISOString().split('T')[0] : '',
+      dateOfBirth: patient.dateOfBirth ? new Date(patient.dateOfBirth) : null,
       address: patient.address || '',
     });
     setEditDialogOpen(true);
@@ -251,7 +255,7 @@ const ManagePatients: React.FC = () => {
       password: '',
       fullName: '',
       phone: '',
-      dateOfBirth: '',
+      dateOfBirth: null,
       address: '',
     });
   };
@@ -502,12 +506,9 @@ const ManagePatients: React.FC = () => {
             <DatePicker
               label="Ngày sinh"
               format="dd/MM/yyyy"
-              value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null}
+              value={formData.dateOfBirth}
               onChange={(newDate: Date | null) => {
-                const dateString = newDate && !isNaN(newDate.getTime()) 
-                  ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
-                  : '';
-                setFormData({ ...formData, dateOfBirth: dateString });
+                setFormData({ ...formData, dateOfBirth: newDate });
               }}
               slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
             />
@@ -574,12 +575,9 @@ const ManagePatients: React.FC = () => {
             <DatePicker
               label="Ngày sinh"
               format="dd/MM/yyyy"
-              value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null}
+              value={formData.dateOfBirth}
               onChange={(newDate: Date | null) => {
-                const dateString = newDate && !isNaN(newDate.getTime()) 
-                  ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
-                  : '';
-                setFormData({ ...formData, dateOfBirth: dateString });
+                setFormData({ ...formData, dateOfBirth: newDate });
               }}
               slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
             />

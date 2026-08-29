@@ -41,7 +41,7 @@ interface TimeSlot {
 const DoctorCalendar: React.FC = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -70,7 +70,9 @@ const DoctorCalendar: React.FC = () => {
   };
 
   const fetchDoctorSchedule = async () => {
-    if (!selectedDoctor) return;
+    if (!selectedDoctor || !selectedDate || isNaN(selectedDate.getTime())) return;
+
+    const dateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
 
     try {
       setLoading(true);
@@ -79,7 +81,7 @@ const DoctorCalendar: React.FC = () => {
       // Get available slots for the doctor on selected date
       const availabilityResponse = await doctorsService.getDoctorAvailability(
         selectedDoctor.id,
-        selectedDate
+        dateString
       );
 
       // Get existing appointments for the doctor on selected date
@@ -90,7 +92,7 @@ const DoctorCalendar: React.FC = () => {
 
       // Filter appointments for selected date
       const dateAppointments = appointmentsResponse.appointments.filter(
-        apt => apt.date === selectedDate
+        apt => apt.date === dateString
       );
 
       // Create time slots from 8 AM to 5 PM (30-minute intervals)
@@ -212,12 +214,9 @@ const DoctorCalendar: React.FC = () => {
             <DatePicker
               label="Chọn ngày"
               format="dd/MM/yyyy"
-              value={selectedDate ? new Date(selectedDate) : null}
+              value={selectedDate}
               onChange={(newDate: Date | null) => {
-                const dateString = newDate && !isNaN(newDate.getTime()) 
-                  ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
-                  : '';
-                if (dateString) setSelectedDate(dateString);
+                setSelectedDate(newDate);
               }}
               minDate={new Date()}
               slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
@@ -272,7 +271,7 @@ const DoctorCalendar: React.FC = () => {
           ) : (
             <Box>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Lịch làm việc ngày {new Date(selectedDate).toLocaleDateString('vi-VN')}
+                Lịch làm việc ngày {selectedDate && !isNaN(selectedDate.getTime()) ? selectedDate.toLocaleDateString('vi-VN') : ''}
               </Typography>
 
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>

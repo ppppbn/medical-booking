@@ -84,9 +84,9 @@ const Statistics: React.FC = () => {
   const [error, setError] = useState<string>('');
 
   // Date range filter
-  const [dateRange, setDateRange] = useState({
-    startDate: '',
-    endDate: '',
+  const [dateRange, setDateRange] = useState<{ startDate: Date | null; endDate: Date | null }>({
+    startDate: null,
+    endDate: null,
   });
 
   // Tab for switching between overview and charts
@@ -101,8 +101,12 @@ const Statistics: React.FC = () => {
       setLoading(true);
 
       const params: { startDate?: string; endDate?: string } = {};
-      if (range.startDate) params.startDate = range.startDate;
-      if (range.endDate) params.endDate = range.endDate;
+      if (range.startDate && !isNaN(range.startDate.getTime())) {
+        params.startDate = `${range.startDate.getFullYear()}-${String(range.startDate.getMonth() + 1).padStart(2, '0')}-${String(range.startDate.getDate()).padStart(2, '0')}`;
+      }
+      if (range.endDate && !isNaN(range.endDate.getTime())) {
+        params.endDate = `${range.endDate.getFullYear()}-${String(range.endDate.getMonth() + 1).padStart(2, '0')}-${String(range.endDate.getDate()).padStart(2, '0')}`;
+      }
 
       // Fetch all statistics in parallel
       const [
@@ -186,7 +190,7 @@ const Statistics: React.FC = () => {
   };
 
   const clearDateFilter = () => {
-    const emptyRange = { startDate: '', endDate: '' };
+    const emptyRange = { startDate: null, endDate: null };
     setDateRange(emptyRange);
     fetchStatistics(emptyRange);
   };
@@ -233,24 +237,18 @@ const Statistics: React.FC = () => {
               <DatePicker
                 label="Từ ngày"
                 format="dd/MM/yyyy"
-                value={dateRange.startDate ? new Date(dateRange.startDate) : null}
+                value={dateRange.startDate}
                 onChange={(newDate: Date | null) => {
-                  const dateString = newDate && !isNaN(newDate.getTime()) 
-                    ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
-                    : '';
-                  setDateRange({ ...dateRange, startDate: dateString });
+                  setDateRange({ ...dateRange, startDate: newDate });
                 }}
                 slotProps={{ textField: { size: 'small' } }}
               />
               <DatePicker
                 label="Đến ngày"
                 format="dd/MM/yyyy"
-                value={dateRange.endDate ? new Date(dateRange.endDate) : null}
+                value={dateRange.endDate}
                 onChange={(newDate: Date | null) => {
-                  const dateString = newDate && !isNaN(newDate.getTime()) 
-                    ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
-                    : '';
-                  setDateRange({ ...dateRange, endDate: dateString });
+                  setDateRange({ ...dateRange, endDate: newDate });
                 }}
                 slotProps={{ textField: { size: 'small' } }}
               />
