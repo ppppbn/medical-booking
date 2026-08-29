@@ -14,7 +14,7 @@ variable "key_name" {
   description = "Name of an existing AWS KeyPair to enable SSH access to the instance"
   type        = string
   # Replace with your actual key pair name in AWS, or set it via terraform.tfvars
-  default     = "my-aws-key"
+  default = "my-aws-key"
 }
 
 

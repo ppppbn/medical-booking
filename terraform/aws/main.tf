@@ -111,9 +111,9 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_instance" "medbooking_vps" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.instance_type
-  key_name      = var.key_name
+  ami                  = data.aws_ami.ubuntu.id
+  instance_type        = var.instance_type
+  key_name             = var.key_name
   iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
 
   vpc_security_group_ids = [aws_security_group.vps_sg.id]
@@ -151,5 +151,14 @@ resource "aws_instance" "medbooking_vps" {
 
   tags = {
     Name = "MedicalBooking-VPS"
+  }
+}
+
+resource "aws_eip" "medbooking_eip" {
+  instance = aws_instance.medbooking_vps.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "MedicalBooking-EIP"
   }
 }
