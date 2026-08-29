@@ -182,7 +182,7 @@ const DoctorCalendar: React.FC = () => {
           </Typography>
 
           {/* Controls */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 3, mb: 3 }}>
             <FormControl fullWidth>
               <InputLabel>Chọn bác sĩ</InputLabel>
               <Select
