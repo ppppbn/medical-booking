@@ -32,6 +32,7 @@ import {
   Tooltip,
   Snackbar,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {
   Search as SearchIcon,
   Add as AddIcon,
@@ -498,13 +499,17 @@ const ManagePatients: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               fullWidth
             />
-            <TextField
+            <DatePicker
               label="Ngày sinh"
-              type="date"
-              value={formData.dateOfBirth}
-              onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
+              format="dd/MM/yyyy"
+              value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null}
+              onChange={(newDate: Date | null) => {
+                const dateString = newDate && !isNaN(newDate.getTime()) 
+                  ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
+                  : '';
+                setFormData({ ...formData, dateOfBirth: dateString });
+              }}
+              slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
             />
             <TextField
               label="Địa chỉ"
@@ -566,13 +571,17 @@ const ManagePatients: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               fullWidth
             />
-            <TextField
+            <DatePicker
               label="Ngày sinh"
-              type="date"
-              value={formData.dateOfBirth}
-              onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
+              format="dd/MM/yyyy"
+              value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null}
+              onChange={(newDate: Date | null) => {
+                const dateString = newDate && !isNaN(newDate.getTime()) 
+                  ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
+                  : '';
+                setFormData({ ...formData, dateOfBirth: dateString });
+              }}
+              slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
             />
             <TextField
               label="Địa chỉ"
