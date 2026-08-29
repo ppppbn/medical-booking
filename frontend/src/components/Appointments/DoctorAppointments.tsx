@@ -62,7 +62,7 @@ const DoctorAppointments: React.FC = () => {
     prescription: string;
     testResults: string;
     followUpInstructions: string;
-    nextAppointmentDate: string;
+    nextAppointmentDate: Date | null;
   }>({
     open: false,
     appointment: null,
@@ -72,7 +72,7 @@ const DoctorAppointments: React.FC = () => {
     prescription: '',
     testResults: '',
     followUpInstructions: '',
-    nextAppointmentDate: '',
+    nextAppointmentDate: null,
   });
   const { user } = useAuth();
 
@@ -170,7 +170,9 @@ const DoctorAppointments: React.FC = () => {
         if (statusDialog.prescription) updateData.prescription = statusDialog.prescription;
         if (statusDialog.testResults) updateData.testResults = statusDialog.testResults;
         if (statusDialog.followUpInstructions) updateData.followUpInstructions = statusDialog.followUpInstructions;
-        if (statusDialog.nextAppointmentDate) updateData.nextAppointmentDate = statusDialog.nextAppointmentDate;
+        if (statusDialog.nextAppointmentDate && !isNaN(statusDialog.nextAppointmentDate.getTime())) {
+          updateData.nextAppointmentDate = `${statusDialog.nextAppointmentDate.getFullYear()}-${String(statusDialog.nextAppointmentDate.getMonth() + 1).padStart(2, '0')}-${String(statusDialog.nextAppointmentDate.getDate()).padStart(2, '0')}T00:00:00.000Z`;
+        }
       }
 
       await appointmentsService.updateAppointment(appointment.id, updateData);
@@ -188,7 +190,7 @@ const DoctorAppointments: React.FC = () => {
         prescription: '',
         testResults: '',
         followUpInstructions: '',
-        nextAppointmentDate: '',
+        nextAppointmentDate: null,
       });
     } catch (error: any) {
       setError(error.response?.data?.error || 'Không thể cập nhật trạng thái');
@@ -407,7 +409,7 @@ const DoctorAppointments: React.FC = () => {
                               prescription: '',
                               testResults: '',
                               followUpInstructions: '',
-                              nextAppointmentDate: '',
+                              nextAppointmentDate: null,
                             })}
                             title="Cập nhật trạng thái"
                           >
@@ -436,7 +438,7 @@ const DoctorAppointments: React.FC = () => {
           prescription: '',
           testResults: '',
           followUpInstructions: '',
-          nextAppointmentDate: '',
+          nextAppointmentDate: null,
         })}
         maxWidth="md"
         fullWidth
@@ -534,12 +536,9 @@ const DoctorAppointments: React.FC = () => {
               <DatePicker
                 label="Lịch hẹn tiếp theo"
                 format="dd/MM/yyyy"
-                value={statusDialog.nextAppointmentDate ? new Date(statusDialog.nextAppointmentDate) : null}
+                value={statusDialog.nextAppointmentDate}
                 onChange={(newDate: Date | null) => {
-                  const dateString = newDate && !isNaN(newDate.getTime()) 
-                    ? `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
-                    : '';
-                  setStatusDialog(prev => ({ ...prev, nextAppointmentDate: dateString }));
+                  setStatusDialog(prev => ({ ...prev, nextAppointmentDate: newDate }));
                 }}
                 slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
               />
@@ -556,7 +555,7 @@ const DoctorAppointments: React.FC = () => {
             prescription: '',
             testResults: '',
             followUpInstructions: '',
-            nextAppointmentDate: '',
+            nextAppointmentDate: null,
           })}>
             Hủy
           </Button>
