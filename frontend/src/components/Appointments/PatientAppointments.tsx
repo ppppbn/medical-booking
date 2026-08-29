@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Paper,
@@ -74,7 +74,6 @@ const MyAppointments: React.FC = () => {
     try {
       setLoading(true);
       const { appointments } = await patientsService.getPatientAppointments(user!.id, {
-        search: searchTerm || undefined,
         sortBy: orderBy === 'doctor' ? 'doctor' : orderBy === 'date' ? 'date' : 'date',
         sortOrder: order,
         limit: 100 // Get all appointments for now, could add pagination later
@@ -93,14 +92,20 @@ const MyAppointments: React.FC = () => {
     setOrderBy(property);
   };
 
-  // Debounce search to avoid too many API calls
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      fetchAppointments();
-    }, 300);
+  const removeAccents = (str: string) => {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  };
 
-    return () => clearTimeout(debounceTimer);
-  }, [searchTerm]);
+  const filteredAppointments = useMemo(() => {
+    if (!searchTerm) return appointments;
+    const term = removeAccents(searchTerm.trim().toLowerCase());
+    return appointments.filter(app => {
+      const doctorName = removeAccents(app.doctor.user.fullName.toLowerCase());
+      const specialization = removeAccents(app.doctor.specialization.toLowerCase());
+      const symptoms = app.symptoms ? removeAccents(app.symptoms.toLowerCase()) : '';
+      return doctorName.includes(term) || specialization.includes(term) || symptoms.includes(term);
+    });
+  }, [appointments, searchTerm]);
 
   const handleCancelAppointment = async (appointment: Appointment) => {
     try {
@@ -214,7 +219,7 @@ const MyAppointments: React.FC = () => {
         </Box>
 
         <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        {appointments.length === 0 ? (
+        {filteredAppointments.length === 0 ? (
           <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', px: 3 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h6" color="text.secondary">
@@ -259,8 +264,8 @@ const MyAppointments: React.FC = () => {
                   <TableCell>Thao tác</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {appointments.map((appointment) => (
+                <TableBody>
+                  {filteredAppointments.map((appointment) => (
                     <TableRow key={appointment.id} hover>
                       <TableCell>{formatDate(appointment.date)}</TableCell>
                       <TableCell>{appointment.time}</TableCell>

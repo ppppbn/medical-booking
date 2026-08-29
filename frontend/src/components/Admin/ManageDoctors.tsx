@@ -70,6 +70,7 @@ const ManageDoctors: React.FC = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [confirmToggleOpen, setConfirmToggleOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
 
   // Form state
@@ -195,18 +196,24 @@ const ManageDoctors: React.FC = () => {
     }
   };
 
-  const handleToggleDoctorStatus = async (doctor: Doctor) => {
+  const handleToggleDoctorStatus = (doctor: Doctor) => {
+    setSelectedDoctor(doctor);
+    setConfirmToggleOpen(true);
+  };
+
+  const executeToggleDoctorStatus = async () => {
+    if (!selectedDoctor) return;
     try {
-      const response = await doctorsService.deactivateDoctor(doctor.id); // This now toggles status
+      const response = await doctorsService.deactivateDoctor(selectedDoctor.id); // This now toggles status
       // Update the doctor in the local state
       setDoctors(doctors.map(d =>
-        d.id === doctor.id
+        d.id === selectedDoctor.id
           ? { ...d, isActive: response.isActive }
           : d
       ));
       // Update filtered doctors as well
       setFilteredDoctors(filteredDoctors.map(d =>
-        d.id === doctor.id
+        d.id === selectedDoctor.id
           ? { ...d, isActive: response.isActive }
           : d
       ));
@@ -218,9 +225,12 @@ const ManageDoctors: React.FC = () => {
     } catch (error: any) {
       setSnackbar({
         open: true,
-        message: 'Không thể thay đổi trạng thái bác sĩ',
+        message: error.response?.data?.error || 'Không thể thay đổi trạng thái bác sĩ',
         severity: 'error'
       });
+    } finally {
+      setConfirmToggleOpen(false);
+      setSelectedDoctor(null);
     }
   };
 
@@ -233,7 +243,7 @@ const ManageDoctors: React.FC = () => {
     setSelectedDoctor(doctor);
     setFormData({
       email: doctor.email,
-      password: '', // Don't populate password for security
+      password: '',
       fullName: doctor.fullName,
       phone: doctor.phone || '',
       specialization: doctor.specialization,
@@ -308,7 +318,6 @@ const ManageDoctors: React.FC = () => {
             Quản lý thông tin và tài khoản của các bác sĩ trong hệ thống
           </Typography>
 
-          {/* Statistics Cards */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 3, mb: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 3 }}>
@@ -352,13 +361,8 @@ const ManageDoctors: React.FC = () => {
             </Card>
           </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
 
-          {/* Filters */}
+
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
             <TextField
               fullWidth
@@ -488,7 +492,6 @@ const ManageDoctors: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Floating Action Button for mobile */}
       <Tooltip title="Thêm bác sĩ">
         <Fab
           color="primary"
@@ -499,7 +502,6 @@ const ManageDoctors: React.FC = () => {
         </Fab>
       </Tooltip>
 
-      {/* Add Doctor Dialog */}
       <Dialog
         open={addDialogOpen}
         onClose={() => {
@@ -624,6 +626,12 @@ const ManageDoctors: React.FC = () => {
               value={formData.fullName}
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               required
+            />
+            <TextField
+              fullWidth
+              label="Số điện thoại"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             />
             <FormControl fullWidth required>
               <InputLabel>Chuyên khoa</InputLabel>
@@ -766,6 +774,27 @@ const ManageDoctors: React.FC = () => {
               Chỉnh sửa
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm Toggle Dialog */}
+      <Dialog
+        open={confirmToggleOpen}
+        onClose={() => setConfirmToggleOpen(false)}
+      >
+        <DialogTitle>Xác nhận {selectedDoctor?.isActive ? 'vô hiệu hóa' : 'kích hoạt'}</DialogTitle>
+        <DialogContent>
+          Bạn có chắc chắn muốn {selectedDoctor?.isActive ? 'vô hiệu hóa' : 'kích hoạt'} tài khoản của bác sĩ <strong>{selectedDoctor?.fullName}</strong>?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmToggleOpen(false)}>Hủy</Button>
+          <Button
+            onClick={executeToggleDoctorStatus}
+            color={selectedDoctor?.isActive ? "error" : "success"}
+            variant="contained"
+          >
+            Đồng ý
+          </Button>
         </DialogActions>
       </Dialog>
 

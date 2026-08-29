@@ -66,6 +66,7 @@ const ManagePatients: React.FC = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [confirmToggleOpen, setConfirmToggleOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   // Form state
@@ -198,13 +199,19 @@ const ManagePatients: React.FC = () => {
     }
   };
 
-  const handleTogglePatientStatus = async (patient: Patient) => {
+  const handleTogglePatientStatus = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setConfirmToggleOpen(true);
+  };
+
+  const executeTogglePatientStatus = async () => {
+    if (!selectedPatient) return;
     try {
-      await patientsService.togglePatientStatus(patient.id);
+      await patientsService.togglePatientStatus(selectedPatient.id);
       await fetchPatientsAndStatistics();
       setSnackbar({
         open: true,
-        message: `Bệnh nhân đã ${patient.isActive ? 'vô hiệu hóa' : 'kích hoạt'} thành công`,
+        message: `Bệnh nhân đã ${selectedPatient.isActive ? 'vô hiệu hóa' : 'kích hoạt'} thành công`,
         severity: 'success'
       });
     } catch (error: any) {
@@ -213,6 +220,9 @@ const ManagePatients: React.FC = () => {
         message: error.response?.data?.error || 'Thao tác thất bại',
         severity: 'error'
       });
+    } finally {
+      setConfirmToggleOpen(false);
+      setSelectedPatient(null);
     }
   };
 
@@ -330,11 +340,7 @@ const ManagePatients: React.FC = () => {
             </Card>
           </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+
 
           {/* Filters */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 2, mb: 2 }}>
@@ -670,6 +676,27 @@ const ManagePatients: React.FC = () => {
             setSelectedPatient(null);
           }}>
             Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm Toggle Dialog */}
+      <Dialog
+        open={confirmToggleOpen}
+        onClose={() => setConfirmToggleOpen(false)}
+      >
+        <DialogTitle>Xác nhận {selectedPatient?.isActive ? 'vô hiệu hóa' : 'kích hoạt'}</DialogTitle>
+        <DialogContent>
+          Bạn có chắc chắn muốn {selectedPatient?.isActive ? 'vô hiệu hóa' : 'kích hoạt'} tài khoản của bệnh nhân <strong>{selectedPatient?.fullName}</strong>?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmToggleOpen(false)}>Hủy</Button>
+          <Button
+            onClick={executeTogglePatientStatus}
+            color={selectedPatient?.isActive ? "error" : "success"}
+            variant="contained"
+          >
+            Đồng ý
           </Button>
         </DialogActions>
       </Dialog>

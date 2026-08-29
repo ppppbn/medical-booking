@@ -63,7 +63,7 @@ const ManageAppointments: React.FC = () => {
 
   // Filters
   const [doctorFilter, setDoctorFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   // Dialog states
   const [statusDialog, setStatusDialog] = useState<{ open: boolean; appointment: Appointment | null; newStatus: string }>({
@@ -135,7 +135,7 @@ const ManageAppointments: React.FC = () => {
       const matchesDoctor = !doctorFilter || appointment.doctor.id === doctorFilter;
 
       // Filter by status
-      const matchesStatus = !statusFilter || appointment.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || appointment.status === statusFilter;
 
       // Filter by tab
       const matchesTab = (() => {
@@ -235,7 +235,7 @@ const ManageAppointments: React.FC = () => {
   const clearFilters = () => {
     setSearchTerm('');
     setDoctorFilter('');
-    setStatusFilter('');
+    setStatusFilter('all');
     setTabValue('all');
   };
 
@@ -357,11 +357,7 @@ const ManageAppointments: React.FC = () => {
             </Card>
           </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+
 
           {/* Tabs */}
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
@@ -408,22 +404,24 @@ const ManageAppointments: React.FC = () => {
                 ))}
               </Select>
             </FormControl>
-            <FormControl size="small">
-              <InputLabel>Lọc theo trạng thái</InputLabel>
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                label="Lọc theo trạng thái"
-              >
-                <MenuItem value="">
-                  <em>Tất cả trạng thái</em>
-                </MenuItem>
-                <MenuItem value={APPOINTMENT_STATUS.PENDING}>Chờ xác nhận</MenuItem>
-                <MenuItem value={APPOINTMENT_STATUS.CONFIRMED}>Đã xác nhận</MenuItem>
-                <MenuItem value={APPOINTMENT_STATUS.COMPLETED}>Hoàn thành</MenuItem>
-                <MenuItem value={APPOINTMENT_STATUS.CANCELLED}>Đã hủy</MenuItem>
-              </Select>
-            </FormControl>
+            {['all', 'today'].includes(tabValue) && (
+              <FormControl size="small">
+                <InputLabel>Lọc theo trạng thái</InputLabel>
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  label="Lọc theo trạng thái"
+                >
+                  <MenuItem value="all">
+                    Tất cả trạng thái
+                  </MenuItem>
+                  <MenuItem value={APPOINTMENT_STATUS.PENDING}>Chờ xác nhận</MenuItem>
+                  <MenuItem value={APPOINTMENT_STATUS.CONFIRMED}>Đã xác nhận</MenuItem>
+                  <MenuItem value={APPOINTMENT_STATUS.COMPLETED}>Hoàn thành</MenuItem>
+                  <MenuItem value={APPOINTMENT_STATUS.CANCELLED}>Đã hủy</MenuItem>
+                </Select>
+              </FormControl>
+            )}
             <Button
               variant="outlined"
               startIcon={<ClearIcon />}
