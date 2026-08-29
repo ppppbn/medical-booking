@@ -22,15 +22,13 @@ services:
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
       - PORT=3000
       - NODE_ENV=${NODE_ENV:-production}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:80}
+      - FRONTEND_URL=${FRONTEND_URL:-https://mybuildspace.tech}
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASS=${EMAIL_PASS}
       - VNP_TMNCODE=${VNP_TMNCODE}
       - VNP_HASHSECRET=${VNP_HASHSECRET}
       - VNP_URL=${VNP_URL}
       - VNP_RETURNURL=${VNP_RETURNURL}
-    ports:
-      - "3000:3000"
     depends_on:
       - db
     restart: always
@@ -40,13 +38,28 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY}/frontend:latest
     container_name: medbooking_frontend
     environment:
-      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:3000/api}
-    ports:
-      - "80:80"
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-https://mybuildspace.tech/api}
     depends_on:
       - backend
     restart: always
     env_file: .env
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: medbooking_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
 volumes:
   sqlserver_data:
+  caddy_data:
+  caddy_config:

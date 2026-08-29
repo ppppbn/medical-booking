@@ -162,3 +162,26 @@ resource "aws_eip" "medbooking_eip" {
     Name = "MedicalBooking-EIP"
   }
 }
+
+# Route53 Hosted Zone
+resource "aws_route53_zone" "primary" {
+  name = "mybuildspace.tech"
+}
+
+# DNS Record for the root domain
+resource "aws_route53_record" "root" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "mybuildspace.tech"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.medbooking_eip.public_ip]
+}
+
+# DNS Record for the www subdomain
+resource "aws_route53_record" "www" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "www.mybuildspace.tech"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.medbooking_eip.public_ip]
+}
