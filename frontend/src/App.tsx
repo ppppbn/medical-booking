@@ -18,6 +18,7 @@ import DoctorAppointments from './components/Appointments/DoctorAppointments';
 import PatientRecords from './components/EMR/PatientRecords';
 import DoctorPatients from './components/EMR/DoctorPatients';
 import AdminStatistics from './components/Admin/Statistics';
+import ManageDepartments from './components/Admin/ManageDepartments';
 import ManageDoctors from './components/Admin/ManageDoctors';
 import ManagePatients from './components/Admin/ManagePatients';
 import ManageAppointments from './components/Admin/ManageAppointments';
@@ -173,6 +174,16 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
             <AppLayout>
               <AdminStatistics />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/departments"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+            <AppLayout>
+              <ManageDepartments />
             </AppLayout>
           </ProtectedRoute>
         }
