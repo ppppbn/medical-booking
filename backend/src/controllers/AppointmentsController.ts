@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
 import { AppointmentRepository } from '../repositories/AppointmentRepository';
+
+const prisma = new PrismaClient();
 import { DoctorRepository } from '../repositories/DoctorRepository';
 import { MedicalRecordRepository } from '../repositories/MedicalRecordRepository';
 import { USER_ROLES, APPOINTMENT_STATUS } from '../constants/roles';
@@ -327,6 +330,21 @@ export class AppointmentsController {
           status,
           notes
         );
+
+        try {
+          await prisma.notifications.create({
+            data: {
+              userId: updatedAppointment.patientId,
+              appointmentId: updatedAppointment.id,
+              type: `APPOINTMENT_${status}`,
+              title: 'Cập nhật trạng thái lịch khám',
+              message: `Lịch khám của bạn đã chuyển sang trạng thái: ${status}`,
+              channel: 'IN_APP'
+            }
+          });
+        } catch (notifErr) {
+          console.error('Failed to create in-app notification:', notifErr);
+        }
       }
 
       res.json({
@@ -387,6 +405,21 @@ export class AppointmentsController {
           APPOINTMENT_STATUS.CANCELLED,
           reason
         );
+
+        try {
+          await prisma.notifications.create({
+            data: {
+              userId: updatedAppointment.patientId,
+              appointmentId: updatedAppointment.id,
+              type: 'APPOINTMENT_CANCELLED',
+              title: 'Lịch khám đã bị hủy',
+              message: `Lịch khám của bạn đã bị hủy${reason ? ` với lý do: ${reason}` : ''}.`,
+              channel: 'IN_APP'
+            }
+          });
+        } catch (notifErr) {
+          console.error('Failed to create in-app notification:', notifErr);
+        }
       }
 
       res.json({

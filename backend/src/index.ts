@@ -11,6 +11,7 @@ import doctorRoutes = require('./routes/doctors');
 import appointmentRoutes = require('./routes/appointments');
 import patientRoutes = require('./routes/patients');
 import paymentRoutes = require('./routes/payments');
+import notificationRoutes = require('./routes/notifications');
 import { ReminderService } from './services/ReminderService';
 import swaggerUi = require('swagger-ui-express');
 import { swaggerSpec } from './config/swagger';
@@ -61,6 +62,7 @@ app.use('/api/doctors', doctorRoutes.default);
 app.use('/api/appointments', appointmentRoutes.default);
 app.use('/api/patients', patientRoutes.default);
 app.use('/api/payments', paymentRoutes.default);
+app.use('/api/notifications', notificationRoutes.default);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
