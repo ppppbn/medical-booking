@@ -5,6 +5,7 @@ import {
   Popover,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   Typography,
   Box,
@@ -79,28 +80,29 @@ const NotificationsMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) 
           ) : (
             notifications.map((notification) => (
               <React.Fragment key={notification.id}>
-                <ListItem 
-                  button 
-                  onClick={() => handleNotificationClick(notification.id)}
-                  sx={{ bgcolor: notification.isRead ? 'transparent' : 'action.hover' }}
-                >
-                  <ListItemText
-                    primary={
-                      <Typography variant="subtitle2" sx={{ fontWeight: notification.isRead ? 400 : 600 }}>
-                        {notification.title}
-                      </Typography>
-                    }
-                    secondary={
-                      <Box component="span" sx={{ display: 'flex', flexDirection: 'column', mt: 0.5 }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ display: 'block' }}>
-                          {notification.message}
+                <ListItem disablePadding>
+                  <ListItemButton 
+                    onClick={() => handleNotificationClick(notification.id)}
+                    sx={{ bgcolor: notification.isRead ? 'transparent' : 'action.hover' }}
+                  >
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle2" sx={{ fontWeight: notification.isRead ? 400 : 600 }}>
+                          {notification.title}
                         </Typography>
-                        <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5 }}>
-                          {format(new Date(notification.createdAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
-                        </Typography>
-                      </Box>
-                    }
-                  />
+                      }
+                      secondary={
+                        <Box component="span" sx={{ display: 'flex', flexDirection: 'column', mt: 0.5 }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ display: 'block' }}>
+                            {notification.message}
+                          </Typography>
+                          <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5 }}>
+                            {format(new Date(notification.createdAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  </ListItemButton>
                 </ListItem>
                 <Divider component="li" />
               </React.Fragment>
