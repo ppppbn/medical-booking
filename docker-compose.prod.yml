@@ -20,7 +20,7 @@ services:
       - DATABASE_URL=sqlserver://db:1433;database=med_booking;user=sa;password=${DB_PASSWORD:-superStrongP@ssw0rd};encrypt=true;trustServerCertificate=true
       - JWT_SECRET=${JWT_SECRET:-super_secret_jwt_key_medbooking}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
-      - PORT=3000
+      - PORT=8080
       - NODE_ENV=${NODE_ENV:-production}
       - FRONTEND_URL=${FRONTEND_URL:-https://mybuildspace.tech}
       - EMAIL_USER=${EMAIL_USER}
