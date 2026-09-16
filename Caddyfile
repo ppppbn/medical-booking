@@ -1,4 +1,4 @@
-:80 {
+mybuildspace.tech, www.mybuildspace.tech {
 	reverse_proxy /api/* backend:8080
 	reverse_proxy frontend:80
 }
