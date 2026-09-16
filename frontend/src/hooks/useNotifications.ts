@@ -8,6 +8,7 @@ export interface Notification {
   type: string;
   createdAt: string;
   isRead: boolean;
+  appointmentId?: string;
 }
 
 export const useNotifications = (intervalMs = 30000) => {
