@@ -39,7 +39,8 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { appointmentsService, Appointment } from '../../services/appointments';
-import { APPOINTMENT_STATUS } from '../../constants/roles';
+import { APPOINTMENT_STATUS, USER_ROLES } from '../../constants/roles';
+import DoctorStatusDialog from '../Shared/DoctorStatusDialog';
 
 type Order = 'asc' | 'desc';
 type TabValue = 'all' | 'today' | 'pending' | 'confirmed' | 'completed';
@@ -56,23 +57,9 @@ const DoctorAppointments: React.FC = () => {
   const [statusDialog, setStatusDialog] = useState<{
     open: boolean;
     appointment: Appointment | null;
-    newStatus: string;
-    diagnosis: string;
-    treatment: string;
-    prescription: string;
-    testResults: string;
-    followUpInstructions: string;
-    nextAppointmentDate: Date | null;
   }>({
     open: false,
-    appointment: null,
-    newStatus: '',
-    diagnosis: '',
-    treatment: '',
-    prescription: '',
-    testResults: '',
-    followUpInstructions: '',
-    nextAppointmentDate: null,
+    appointment: null
   });
   const { user } = useAuth();
 
@@ -159,41 +146,14 @@ const DoctorAppointments: React.FC = () => {
     setOrderBy(property);
   };
 
-  const handleUpdateStatus = async (appointment: Appointment, newStatus: string) => {
-    try {
-      const updateData: any = { status: newStatus };
-
-      // If completing the appointment, include medical record data
-      if (newStatus === APPOINTMENT_STATUS.COMPLETED) {
-        if (statusDialog.diagnosis) updateData.diagnosis = statusDialog.diagnosis;
-        if (statusDialog.treatment) updateData.treatment = statusDialog.treatment;
-        if (statusDialog.prescription) updateData.prescription = statusDialog.prescription;
-        if (statusDialog.testResults) updateData.testResults = statusDialog.testResults;
-        if (statusDialog.followUpInstructions) updateData.followUpInstructions = statusDialog.followUpInstructions;
-        if (statusDialog.nextAppointmentDate && !isNaN(statusDialog.nextAppointmentDate.getTime())) {
-          updateData.nextAppointmentDate = `${statusDialog.nextAppointmentDate.getFullYear()}-${String(statusDialog.nextAppointmentDate.getMonth() + 1).padStart(2, '0')}-${String(statusDialog.nextAppointmentDate.getDate()).padStart(2, '0')}T00:00:00.000Z`;
-        }
-      }
-
-      await appointmentsService.updateAppointment(appointment.id, updateData);
+  const handleSuccessUpdate = (newStatus: string) => {
+    if (statusDialog.appointment) {
       setAppointments(appointments.map(app =>
-        app.id === appointment.id
+        app.id === statusDialog.appointment!.id
           ? { ...app, status: newStatus }
           : app
       ));
-      setStatusDialog({
-        open: false,
-        appointment: null,
-        newStatus: '',
-        diagnosis: '',
-        treatment: '',
-        prescription: '',
-        testResults: '',
-        followUpInstructions: '',
-        nextAppointmentDate: null,
-      });
-    } catch (error: any) {
-      setError(error.response?.data?.error || 'Không thể cập nhật trạng thái');
+      setStatusDialog({ open: false, appointment: null });
     }
   };
 
@@ -402,14 +362,7 @@ const DoctorAppointments: React.FC = () => {
                             size="small"
                             onClick={() => setStatusDialog({
                               open: true,
-                              appointment,
-                              newStatus: getAvailableStatusChanges(appointment)[0]?.value || '',
-                              diagnosis: '',
-                              treatment: '',
-                              prescription: '',
-                              testResults: '',
-                              followUpInstructions: '',
-                              nextAppointmentDate: null,
+                              appointment
                             })}
                             title="Cập nhật trạng thái"
                           >
@@ -427,147 +380,12 @@ const DoctorAppointments: React.FC = () => {
       </Paper>
 
       {/* Status Update Dialog */}
-      <Dialog
+      <DoctorStatusDialog
         open={statusDialog.open}
-        onClose={() => setStatusDialog({
-          open: false,
-          appointment: null,
-          newStatus: '',
-          diagnosis: '',
-          treatment: '',
-          prescription: '',
-          testResults: '',
-          followUpInstructions: '',
-          nextAppointmentDate: null,
-        })}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Cập nhật trạng thái lịch hẹn</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ mb: 2 }}>
-            Cập nhật trạng thái cho lịch hẹn của{' '}
-            <strong>{statusDialog.appointment?.patient.fullName}</strong> vào ngày{' '}
-            <strong>{statusDialog.appointment && formatDate(statusDialog.appointment.date)}</strong>
-          </Typography>
-
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Trạng thái mới</InputLabel>
-            <Select
-              value={statusDialog.newStatus}
-              onChange={(e) => setStatusDialog(prev => ({ ...prev, newStatus: e.target.value }))}
-              label="Trạng thái mới"
-              fullWidth
-            >
-              {statusDialog.appointment && getAvailableStatusChanges(statusDialog.appointment).map(option => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* Medical Record Fields - Only show when completing appointment */}
-          {statusDialog.newStatus === APPOINTMENT_STATUS.COMPLETED && (
-            <>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Thông tin y tế
-              </Typography>
-
-              <TextField
-                fullWidth
-                label="Chẩn đoán"
-                multiline
-                rows={2}
-                value={statusDialog.diagnosis}
-                onChange={(e) => setStatusDialog(prev => ({ ...prev, diagnosis: e.target.value }))}
-                placeholder="Nhập chẩn đoán bệnh..."
-                sx={{ mb: 2 }}
-                required={statusDialog.newStatus === APPOINTMENT_STATUS.COMPLETED}
-                error={statusDialog.newStatus === APPOINTMENT_STATUS.COMPLETED && !statusDialog.diagnosis?.trim()}
-                helperText={statusDialog.newStatus === APPOINTMENT_STATUS.COMPLETED && !statusDialog.diagnosis?.trim() ? "Vui lòng nhập chẩn đoán khi hoàn thành khám" : ""}
-              />
-
-              <TextField
-                fullWidth
-                label="Điều trị"
-                multiline
-                rows={2}
-                value={statusDialog.treatment}
-                onChange={(e) => setStatusDialog(prev => ({ ...prev, treatment: e.target.value }))}
-                placeholder="Mô tả phương pháp điều trị..."
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                fullWidth
-                label="Đơn thuốc"
-                multiline
-                rows={3}
-                value={statusDialog.prescription}
-                onChange={(e) => setStatusDialog(prev => ({ ...prev, prescription: e.target.value }))}
-                placeholder="Liệt kê các loại thuốc và liều lượng..."
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                fullWidth
-                label="Kết quả xét nghiệm"
-                multiline
-                rows={2}
-                value={statusDialog.testResults}
-                onChange={(e) => setStatusDialog(prev => ({ ...prev, testResults: e.target.value }))}
-                placeholder="Kết quả các xét nghiệm (nếu có)..."
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                fullWidth
-                label="Hướng dẫn theo dõi"
-                multiline
-                rows={2}
-                value={statusDialog.followUpInstructions}
-                onChange={(e) => setStatusDialog(prev => ({ ...prev, followUpInstructions: e.target.value }))}
-                placeholder="Hướng dẫn cho bệnh nhân sau khi khám..."
-                sx={{ mb: 2 }}
-              />
-
-              <DatePicker
-                label="Lịch hẹn tiếp theo"
-                format="dd/MM/yyyy"
-                value={statusDialog.nextAppointmentDate}
-                onChange={(newDate: Date | null) => {
-                  setStatusDialog(prev => ({ ...prev, nextAppointmentDate: newDate }));
-                }}
-                slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
-              />
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setStatusDialog({
-            open: false,
-            appointment: null,
-            newStatus: '',
-            diagnosis: '',
-            treatment: '',
-            prescription: '',
-            testResults: '',
-            followUpInstructions: '',
-            nextAppointmentDate: null,
-          })}>
-            Hủy
-          </Button>
-          <Button
-            onClick={() => statusDialog.appointment && handleUpdateStatus(statusDialog.appointment, statusDialog.newStatus)}
-            variant="contained"
-            disabled={!statusDialog.newStatus || (statusDialog.newStatus === APPOINTMENT_STATUS.COMPLETED && !statusDialog.diagnosis?.trim())}
-          >
-            Xác nhận
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onClose={() => setStatusDialog({ open: false, appointment: null })}
+        appointment={statusDialog.appointment}
+        onSuccess={handleSuccessUpdate}
+      />
     </Box>
   );
 };

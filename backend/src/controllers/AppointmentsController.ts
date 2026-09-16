@@ -382,7 +382,7 @@ export class AppointmentsController {
               appointmentId: updatedAppointment.id,
               type: `APPOINTMENT_${status}`,
               title: 'Cập nhật trạng thái lịch khám',
-              message: `Lịch khám của bạn đã chuyển sang trạng thái: ${status}`,
+              message: `Lịch khám của bạn đã chuyển sang trạng thái: ${status === 'PENDING' ? 'Chờ xác nhận' : status === 'CONFIRMED' ? 'Đã xác nhận' : status === 'COMPLETED' ? 'Đã hoàn thành' : status === 'CANCELLED' ? 'Đã hủy' : status}`,
               channel: 'IN_APP'
             }
           });

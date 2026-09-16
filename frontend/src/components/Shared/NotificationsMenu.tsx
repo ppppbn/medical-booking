@@ -15,8 +15,13 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useNotifications } from '../../hooks/useNotifications';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { USER_ROLES } from '../../constants/roles';
 
 const NotificationsMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead } = useNotifications(30000); // 30s poll
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
@@ -28,9 +33,21 @@ const NotificationsMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) 
     setAnchorEl(null);
   };
 
-  const handleNotificationClick = (id: string) => {
-    markAsRead(id);
-    // You could also navigate the user to the relevant page here based on type
+  const handleNotificationClick = (notification: any) => {
+    markAsRead(notification.id);
+    handleClose();
+    
+    if (notification.appointmentId) {
+      navigate(`/appointments/${notification.appointmentId}`);
+    } else if (notification.type.includes('APPOINTMENT')) {
+      if (user?.role === USER_ROLES.PATIENT) {
+        navigate('/appointments');
+      } else if (user?.role === USER_ROLES.DOCTOR) {
+        navigate('/doctor-appointments');
+      } else if (user?.role === USER_ROLES.ADMIN) {
+        navigate('/admin/appointments');
+      }
+    }
   };
 
   const open = Boolean(anchorEl);
@@ -82,7 +99,7 @@ const NotificationsMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) 
               <React.Fragment key={notification.id}>
                 <ListItem disablePadding>
                   <ListItemButton 
-                    onClick={() => handleNotificationClick(notification.id)}
+                    onClick={() => handleNotificationClick(notification)}
                     sx={{ bgcolor: notification.isRead ? 'transparent' : 'action.hover' }}
                   >
                     <ListItemText
