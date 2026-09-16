@@ -17,7 +17,6 @@ data "aws_vpc" "default" {
   default = true
 }
 
-/*
 # IAM Role for SSM
 resource "aws_iam_role" "ssm_role" {
   name = "medbooking-ec2-ssm-role"
@@ -163,4 +162,3 @@ resource "aws_eip" "medbooking_eip" {
     Name = "MedicalBooking-EIP"
   }
 }
-*/
