@@ -25,6 +25,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../constants/roles';
 import UserPopover from './UserPopover';
+import NotificationsMenu from './NotificationsMenu';
 
 interface SidebarItem {
   label: string;
@@ -187,8 +188,11 @@ const Sidebar: React.FC = () => {
 
       {/* User Section */}
       <Divider />
-      <Box sx={{ p: 2 }}>
-        <UserPopover isCollapsed={!open} />
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: open ? 'flex-start' : 'center', flexDirection: open ? 'row' : 'column', gap: open ? 0 : 2 }}>
+        <NotificationsMenu isCollapsed={!open} />
+        <Box sx={{ ml: open ? 1 : 0 }}>
+          <UserPopover isCollapsed={!open} />
+        </Box>
       </Box>
     </Box>
   );
