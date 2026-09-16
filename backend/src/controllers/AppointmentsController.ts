@@ -156,6 +156,28 @@ export class AppointmentsController {
             );
           }
 
+          // Send in-app notification to the doctor for recurring appointments
+          try {
+            const doctorData = await prisma.doctors.findUnique({
+              where: { id: doctorId },
+              select: { userId: true }
+            });
+            if (doctorData && firstAppt) {
+              await prisma.notifications.create({
+                data: {
+                  userId: doctorData.userId,
+                  appointmentId: firstAppt.id,
+                  type: 'NEW_APPOINTMENT',
+                  title: 'Lịch hẹn lặp lại mới',
+                  message: `Bệnh nhân ${firstAppt.patient?.fullName || 'ẩn danh'} đã đặt lịch hẹn lặp lại định kỳ (${weeksCount} tuần) bắt đầu từ ngày ${appointmentDate.toISOString().split('T')[0]} lúc ${time}.`,
+                  channel: 'IN_APP'
+                }
+              });
+            }
+          } catch (notifErr) {
+            console.error('Failed to create notification for doctor (recurring):', notifErr);
+          }
+
           res.status(201).json({
             message: `Đặt lịch khám lặp lại (${weeksCount} tuần) thành công`,
             appointments: recurringAppointments
@@ -200,6 +222,28 @@ export class AppointmentsController {
             type: appointment.appointmentType || 'Khám thường'
           }
         );
+      }
+
+      // Send in-app notification to the doctor
+      try {
+        const doctorData = await prisma.doctors.findUnique({
+          where: { id: doctorId },
+          select: { userId: true }
+        });
+        if (doctorData) {
+          await prisma.notifications.create({
+            data: {
+              userId: doctorData.userId,
+              appointmentId: appointment.id,
+              type: 'NEW_APPOINTMENT',
+              title: 'Lịch hẹn mới',
+              message: `Bệnh nhân ${appointment.patient?.fullName || 'ẩn danh'} đã đặt lịch hẹn vào ngày ${date} lúc ${time}.`,
+              channel: 'IN_APP'
+            }
+          });
+        }
+      } catch (notifErr) {
+        console.error('Failed to create notification for doctor:', notifErr);
       }
 
       res.status(201).json({
@@ -420,6 +464,28 @@ export class AppointmentsController {
         } catch (notifErr) {
           console.error('Failed to create in-app notification:', notifErr);
         }
+      }
+
+      // Notify the doctor
+      try {
+        const doctorData = await prisma.doctors.findUnique({
+          where: { id: updatedAppointment.doctorId },
+          select: { userId: true }
+        });
+        if (doctorData) {
+          await prisma.notifications.create({
+            data: {
+              userId: doctorData.userId,
+              appointmentId: updatedAppointment.id,
+              type: 'APPOINTMENT_CANCELLED',
+              title: 'Lịch hẹn bị hủy',
+              message: `Bệnh nhân ${updatedAppointment.patient?.fullName || 'ẩn danh'} đã hủy lịch hẹn.${reason ? ` Lý do: ${reason}` : ''}`,
+              channel: 'IN_APP'
+            }
+          });
+        }
+      } catch (notifErr) {
+        console.error('Failed to create notification for doctor:', notifErr);
       }
 
       res.json({
