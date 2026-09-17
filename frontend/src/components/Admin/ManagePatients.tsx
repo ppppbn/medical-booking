@@ -42,6 +42,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { patientsService, Patient } from '../../services/patients';
+import { validateRequired, validateEmail, validatePhone, validatePassword, validateMaxLength } from '../../utils/validation';
 
 type Order = 'asc' | 'desc';
 
@@ -79,6 +80,7 @@ const ManagePatients: React.FC = () => {
     dateOfBirth: null,
     address: '',
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Statistics state
   const [statistics, setStatistics] = useState({
@@ -150,6 +152,20 @@ const ManagePatients: React.FC = () => {
   };
 
   const handleAddPatient = async () => {
+    // Validate
+    const errors: Record<string, string> = {};
+    errors.email = validateRequired(formData.email, 'Email') || validateEmail(formData.email) || validateMaxLength(formData.email, 100, 'Email');
+    errors.password = validateRequired(formData.password, 'Mật khẩu') || validatePassword(formData.password);
+    errors.fullName = validateRequired(formData.fullName, 'Họ và tên') || validateMaxLength(formData.fullName, 50, 'Họ và tên');
+    errors.phone = formData.phone ? validatePhone(formData.phone) : '';
+    errors.address = formData.address ? validateMaxLength(formData.address, 200, 'Địa chỉ') : '';
+
+    const activeErrors = Object.fromEntries(Object.entries(errors).filter(([_, v]) => v !== ''));
+    if (Object.keys(activeErrors).length > 0) {
+      setFormErrors(activeErrors);
+      return;
+    }
+
     try {
       await patientsService.createPatient({
         ...formData,
@@ -176,6 +192,18 @@ const ManagePatients: React.FC = () => {
 
   const handleEditPatient = async () => {
     if (!selectedPatient) return;
+
+    // Validate
+    const errors: Record<string, string> = {};
+    errors.fullName = validateRequired(formData.fullName, 'Họ và tên') || validateMaxLength(formData.fullName, 50, 'Họ và tên');
+    errors.phone = formData.phone ? validatePhone(formData.phone) : '';
+    errors.address = formData.address ? validateMaxLength(formData.address, 200, 'Địa chỉ') : '';
+
+    const activeErrors = Object.fromEntries(Object.entries(errors).filter(([_, v]) => v !== ''));
+    if (Object.keys(activeErrors).length > 0) {
+      setFormErrors(activeErrors);
+      return;
+    }
 
     try {
       await patientsService.updatePatient(selectedPatient.id, {
@@ -258,6 +286,7 @@ const ManagePatients: React.FC = () => {
       dateOfBirth: null,
       address: '',
     });
+    setFormErrors({});
   };
 
   const getInitials = (fullName: string | undefined) => {
@@ -478,30 +507,50 @@ const ManagePatients: React.FC = () => {
               label="Email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, email: e.target.value });
+                if (formErrors.email) setFormErrors({ ...formErrors, email: '' });
+              }}
               required
               fullWidth
+              error={!!formErrors.email}
+              helperText={formErrors.email}
             />
             <TextField
               label="Mật khẩu"
               type="password"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, password: e.target.value });
+                if (formErrors.password) setFormErrors({ ...formErrors, password: '' });
+              }}
               required
               fullWidth
+              error={!!formErrors.password}
+              helperText={formErrors.password}
             />
             <TextField
               label="Họ và tên"
               value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, fullName: e.target.value });
+                if (formErrors.fullName) setFormErrors({ ...formErrors, fullName: '' });
+              }}
               required
               fullWidth
+              error={!!formErrors.fullName}
+              helperText={formErrors.fullName}
             />
             <TextField
               label="Số điện thoại"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, phone: e.target.value });
+                if (formErrors.phone) setFormErrors({ ...formErrors, phone: '' });
+              }}
               fullWidth
+              error={!!formErrors.phone}
+              helperText={formErrors.phone}
             />
             <DatePicker
               label="Ngày sinh"
@@ -517,8 +566,13 @@ const ManagePatients: React.FC = () => {
               multiline
               rows={3}
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, address: e.target.value });
+                if (formErrors.address) setFormErrors({ ...formErrors, address: '' });
+              }}
               fullWidth
+              error={!!formErrors.address}
+              helperText={formErrors.address}
             />
           </Box>
         </DialogContent>
@@ -562,15 +616,25 @@ const ManagePatients: React.FC = () => {
             <TextField
               label="Họ và tên"
               value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, fullName: e.target.value });
+                if (formErrors.fullName) setFormErrors({ ...formErrors, fullName: '' });
+              }}
               required
               fullWidth
+              error={!!formErrors.fullName}
+              helperText={formErrors.fullName}
             />
             <TextField
               label="Số điện thoại"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, phone: e.target.value });
+                if (formErrors.phone) setFormErrors({ ...formErrors, phone: '' });
+              }}
               fullWidth
+              error={!!formErrors.phone}
+              helperText={formErrors.phone}
             />
             <DatePicker
               label="Ngày sinh"
@@ -586,8 +650,13 @@ const ManagePatients: React.FC = () => {
               multiline
               rows={3}
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, address: e.target.value });
+                if (formErrors.address) setFormErrors({ ...formErrors, address: '' });
+              }}
               fullWidth
+              error={!!formErrors.address}
+              helperText={formErrors.address}
             />
           </Box>
         </DialogContent>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Paper, Typography, TextField, Button, Alert, Snackbar } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 import { USER_ROLES } from '../../constants/roles';
+import { validateRequired, validatePhone, validateMaxLength } from '../../utils/validation';
 
 const Profile: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -10,6 +11,7 @@ const Profile: React.FC = () => {
     fullName: '',
     phone: '',
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
@@ -27,10 +29,24 @@ const Profile: React.FC = () => {
       ...prev,
       [name]: value
     }));
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSubmit = async () => {
     if (!user) return;
+
+    // Validation
+    const errors: Record<string, string> = {};
+    errors.fullName = validateRequired(formData.fullName, 'Họ và tên') || validateMaxLength(formData.fullName, 50, 'Họ và tên');
+    errors.phone = validateRequired(formData.phone, 'Số điện thoại') || validatePhone(formData.phone);
+    
+    const activeErrors = Object.fromEntries(Object.entries(errors).filter(([_, v]) => v !== ''));
+    if (Object.keys(activeErrors).length > 0) {
+      setFormErrors(activeErrors);
+      return;
+    }
 
     try {
       // Mock response for now (to be implemented in TSK-405/TSK-402)
@@ -68,7 +84,13 @@ const Profile: React.FC = () => {
             </Button>
           ) : (
             <Box>
-              <Button variant="outlined" onClick={() => setIsEditing(false)} sx={{ mr: 1 }}>
+              <Button variant="outlined" onClick={() => {
+                setIsEditing(false);
+                setFormErrors({});
+                if (user) {
+                  setFormData({ fullName: user.fullName || '', phone: user.phone || '' });
+                }
+              }} sx={{ mr: 1 }}>
                 Hủy
               </Button>
               <Button variant="contained" onClick={handleSubmit}>
@@ -93,6 +115,8 @@ const Profile: React.FC = () => {
               value={isEditing ? formData.fullName : (user?.fullName || '')}
               onChange={handleChange}
               InputProps={{ readOnly: !isEditing }}
+              error={!!formErrors.fullName}
+              helperText={formErrors.fullName}
             />
           </Box>
           <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
@@ -112,6 +136,8 @@ const Profile: React.FC = () => {
               value={isEditing ? formData.phone : (user?.phone || 'Chưa cập nhật')}
               onChange={handleChange}
               InputProps={{ readOnly: !isEditing }}
+              error={!!formErrors.phone}
+              helperText={formErrors.phone}
             />
           </Box>
           <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
