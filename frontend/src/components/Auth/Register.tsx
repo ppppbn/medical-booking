@@ -24,6 +24,7 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { RegisterRequest } from '../../types/auth';
+import { validateRequired, validateEmail, validatePhone, validatePassword, validateMaxLength } from '../../utils/validation';
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState<RegisterRequest>({
@@ -34,6 +35,7 @@ const Register: React.FC = () => {
     address: '',
   });
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -43,19 +45,39 @@ const Register: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (formErrors[e.target.name]) {
+      setFormErrors({ ...formErrors, [e.target.name]: '' });
+    }
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value);
+    if (formErrors.confirmPassword) {
+      setFormErrors({ ...formErrors, confirmPassword: '' });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (formData.password !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp');
-      return;
+    // Validation
+    const errors: Record<string, string> = {};
+    errors.fullName = validateRequired(formData.fullName, 'Họ và tên') || validateMaxLength(formData.fullName, 50, 'Họ và tên');
+    errors.phone = validateRequired(formData.phone, 'Số điện thoại') || validatePhone(formData.phone);
+    errors.email = validateRequired(formData.email, 'Email') || validateEmail(formData.email) || validateMaxLength(formData.email, 100, 'Email');
+    errors.address = validateMaxLength(formData.address, 200, 'Địa chỉ');
+    errors.password = validateRequired(formData.password, 'Mật khẩu') || validatePassword(formData.password);
+    
+    if (confirmPassword !== formData.password) {
+      errors.confirmPassword = 'Mật khẩu xác nhận không khớp';
     }
 
-    if (formData.password.length < 6) {
-      setError('Mật khẩu phải có ít nhất 6 ký tự');
+    // Filter out empty strings
+    const activeErrors = Object.fromEntries(Object.entries(errors).filter(([_, v]) => v !== ''));
+    
+    if (Object.keys(activeErrors).length > 0) {
+      setFormErrors(activeErrors);
       return;
     }
 
@@ -168,11 +190,12 @@ const Register: React.FC = () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  required
+                  error={!!formErrors.fullName}
+                  helperText={formErrors.fullName}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <PersonIcon color="action" />
+                        <PersonIcon color={formErrors.fullName ? 'error' : 'action'} />
                       </InputAdornment>
                     ),
                   }}
@@ -185,10 +208,12 @@ const Register: React.FC = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
+                  error={!!formErrors.phone}
+                  helperText={formErrors.phone}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <PhoneIcon color="action" />
+                        <PhoneIcon color={formErrors.phone ? 'error' : 'action'} />
                       </InputAdornment>
                     ),
                   }}
@@ -202,11 +227,12 @@ const Register: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required
+                  error={!!formErrors.email}
+                  helperText={formErrors.email}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <EmailIcon color="action" />
+                        <EmailIcon color={formErrors.email ? 'error' : 'action'} />
                       </InputAdornment>
                     ),
                   }}
@@ -219,10 +245,12 @@ const Register: React.FC = () => {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
+                  error={!!formErrors.address}
+                  helperText={formErrors.address}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <HomeIcon color="action" />
+                        <HomeIcon color={formErrors.address ? 'error' : 'action'} />
                       </InputAdornment>
                     ),
                   }}
@@ -236,11 +264,12 @@ const Register: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleChange}
-                  required
+                  error={!!formErrors.password}
+                  helperText={formErrors.password}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <LockIcon color="action" />
+                        <LockIcon color={formErrors.password ? 'error' : 'action'} />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -265,12 +294,13 @@ const Register: React.FC = () => {
                   name="confirmPassword"
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
+                  onChange={handleConfirmPasswordChange}
+                  error={!!formErrors.confirmPassword}
+                  helperText={formErrors.confirmPassword}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <LockIcon color="action" />
+                        <LockIcon color={formErrors.confirmPassword ? 'error' : 'action'} />
                       </InputAdornment>
                     ),
                   }}

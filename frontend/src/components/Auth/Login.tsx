@@ -20,9 +20,11 @@ import {
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { validateRequired, validateEmail } from '../../utils/validation';
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,11 +37,26 @@ const Login: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // clear error when typing
+    if (formErrors[e.target.name]) {
+      setFormErrors({ ...formErrors, [e.target.name]: '' });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    // Validation
+    const errors: Record<string, string> = {};
+    errors.email = validateRequired(formData.email, 'Email') || validateEmail(formData.email);
+    errors.password = validateRequired(formData.password, 'Mật khẩu');
+
+    if (errors.email || errors.password) {
+      setFormErrors(errors);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -148,12 +165,13 @@ const Login: React.FC = () => {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              required
+              error={!!formErrors.email}
+              helperText={formErrors.email}
               sx={{ mb: 3 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <EmailIcon color="action" />
+                    <EmailIcon color={formErrors.email ? 'error' : 'action'} />
                   </InputAdornment>
                 ),
               }}
@@ -166,12 +184,13 @@ const Login: React.FC = () => {
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleChange}
-              required
+              error={!!formErrors.password}
+              helperText={formErrors.password}
               sx={{ mb: 4 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LockIcon color="action" />
+                    <LockIcon color={formErrors.password ? 'error' : 'action'} />
                   </InputAdornment>
                 ),
                 endAdornment: (

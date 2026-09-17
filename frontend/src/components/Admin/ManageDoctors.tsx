@@ -41,6 +41,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { doctorsService, Doctor } from '../../services/doctors';
+import { validateRequired, validateEmail, validatePhone, validatePassword, validateMaxLength } from '../../utils/validation';
 
 type Order = 'asc' | 'desc';
 
@@ -84,6 +85,7 @@ const ManageDoctors: React.FC = () => {
     experience: 0,
     bio: '',
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Snackbar
   const [snackbar, setSnackbar] = useState<{
@@ -168,6 +170,20 @@ const ManageDoctors: React.FC = () => {
 
   const handleEditDoctor = async () => {
     if (!selectedDoctor) return;
+
+    // Validate
+    const errors: Record<string, string> = {};
+    errors.fullName = validateRequired(formData.fullName, 'Họ và tên') || validateMaxLength(formData.fullName, 50, 'Họ và tên');
+    errors.phone = formData.phone ? validatePhone(formData.phone) : '';
+    errors.specialization = validateRequired(formData.specialization, 'Chuyên khoa') || validateMaxLength(formData.specialization, 100, 'Chuyên khoa');
+    errors.licenseNumber = validateRequired(formData.licenseNumber, 'Giấy phép') || validateMaxLength(formData.licenseNumber, 100, 'Giấy phép');
+    errors.bio = formData.bio ? validateMaxLength(formData.bio, 500, 'Tiểu sử') : '';
+
+    const activeErrors = Object.fromEntries(Object.entries(errors).filter(([_, v]) => v !== ''));
+    if (Object.keys(activeErrors).length > 0) {
+      setFormErrors(activeErrors);
+      return;
+    }
 
     try {
       await doctorsService.updateDoctorProfile(selectedDoctor.id, {
@@ -265,6 +281,7 @@ const ManageDoctors: React.FC = () => {
       experience: 0,
       bio: '',
     });
+    setFormErrors({});
   };
 
   const getInitials = (fullName: string | undefined) => {
@@ -519,36 +536,60 @@ const ManageDoctors: React.FC = () => {
               label="Email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, email: e.target.value });
+                if (formErrors.email) setFormErrors({ ...formErrors, email: '' });
+              }}
               required
+              error={!!formErrors.email}
+              helperText={formErrors.email}
             />
             <TextField
               fullWidth
               label="Mật khẩu"
               type="password"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, password: e.target.value });
+                if (formErrors.password) setFormErrors({ ...formErrors, password: '' });
+              }}
               required
+              error={!!formErrors.password}
+              helperText={formErrors.password}
             />
             <TextField
               fullWidth
               label="Họ tên"
               value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, fullName: e.target.value });
+                if (formErrors.fullName) setFormErrors({ ...formErrors, fullName: '' });
+              }}
               required
+              error={!!formErrors.fullName}
+              helperText={formErrors.fullName}
             />
             <TextField
               fullWidth
               label="Số điện thoại"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, phone: e.target.value });
+                if (formErrors.phone) setFormErrors({ ...formErrors, phone: '' });
+              }}
+              error={!!formErrors.phone}
+              helperText={formErrors.phone}
             />
             <FormControl fullWidth required>
               <InputLabel>Chuyên khoa</InputLabel>
               <Select
                 value={formData.specialization}
-                onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, specialization: e.target.value });
+                  if (formErrors.specialization) setFormErrors({ ...formErrors, specialization: '' });
+                }}
                 label="Chuyên khoa"
+                error={!!formErrors.specialization}
               >
                 {specializations.map(specialization => (
                   <MenuItem key={specialization} value={specialization}>
@@ -561,8 +602,13 @@ const ManageDoctors: React.FC = () => {
               fullWidth
               label="Giấy phép hành nghề"
               value={formData.licenseNumber}
-              onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, licenseNumber: e.target.value });
+                if (formErrors.licenseNumber) setFormErrors({ ...formErrors, licenseNumber: '' });
+              }}
               required
+              error={!!formErrors.licenseNumber}
+              helperText={formErrors.licenseNumber}
             />
             <TextField
               fullWidth
@@ -577,8 +623,13 @@ const ManageDoctors: React.FC = () => {
               multiline
               rows={3}
               value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, bio: e.target.value });
+                if (formErrors.bio) setFormErrors({ ...formErrors, bio: '' });
+              }}
               sx={{ gridColumn: '1 / -1' }}
+              error={!!formErrors.bio}
+              helperText={formErrors.bio}
             />
           </Box>
         </DialogContent>
@@ -624,21 +675,35 @@ const ManageDoctors: React.FC = () => {
               fullWidth
               label="Họ tên"
               value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, fullName: e.target.value });
+                if (formErrors.fullName) setFormErrors({ ...formErrors, fullName: '' });
+              }}
               required
+              error={!!formErrors.fullName}
+              helperText={formErrors.fullName}
             />
             <TextField
               fullWidth
               label="Số điện thoại"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, phone: e.target.value });
+                if (formErrors.phone) setFormErrors({ ...formErrors, phone: '' });
+              }}
+              error={!!formErrors.phone}
+              helperText={formErrors.phone}
             />
             <FormControl fullWidth required>
               <InputLabel>Chuyên khoa</InputLabel>
               <Select
                 value={formData.specialization}
-                onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, specialization: e.target.value });
+                  if (formErrors.specialization) setFormErrors({ ...formErrors, specialization: '' });
+                }}
                 label="Chuyên khoa"
+                error={!!formErrors.specialization}
               >
                 {specializations.map(specialization => (
                   <MenuItem key={specialization} value={specialization}>
@@ -651,8 +716,13 @@ const ManageDoctors: React.FC = () => {
               fullWidth
               label="Giấy phép hành nghề"
               value={formData.licenseNumber}
-              onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, licenseNumber: e.target.value });
+                if (formErrors.licenseNumber) setFormErrors({ ...formErrors, licenseNumber: '' });
+              }}
               required
+              error={!!formErrors.licenseNumber}
+              helperText={formErrors.licenseNumber}
             />
             <TextField
               fullWidth
@@ -667,8 +737,13 @@ const ManageDoctors: React.FC = () => {
               multiline
               rows={3}
               value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, bio: e.target.value });
+                if (formErrors.bio) setFormErrors({ ...formErrors, bio: '' });
+              }}
               sx={{ gridColumn: '1 / -1' }}
+              error={!!formErrors.bio}
+              helperText={formErrors.bio}
             />
           </Box>
         </DialogContent>
