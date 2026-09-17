@@ -435,7 +435,19 @@ const ManageAppointments: React.FC = () => {
           </Box>
 
           {/* Table */}
-          <TableContainer component={Paper} sx={{ maxHeight: '60vh' }}>
+          {filteredAppointments.length === 0 ? (
+            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary">
+                  {searchTerm || doctorFilter || statusFilter !== 'all' ? 'Không tìm thấy lịch hẹn nào' : 'Chưa có lịch hẹn nào'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {searchTerm || doctorFilter || statusFilter !== 'all' ? 'Hãy thử thay đổi điều kiện lọc' : 'Chưa có dữ liệu'}
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <TableContainer component={Paper} sx={{ maxHeight: '60vh' }}>
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
@@ -612,6 +624,7 @@ const ManageAppointments: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
+          )}
         </Box>
       </Paper>
 

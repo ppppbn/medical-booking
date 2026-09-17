@@ -395,7 +395,19 @@ const ManagePatients: React.FC = () => {
           </Box>
 
           {/* Table */}
-          <TableContainer component={Paper} sx={{ maxHeight: '60vh' }}>
+          {filteredPatients.length === 0 ? (
+            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary">
+                  {searchTerm ? 'Không tìm thấy bệnh nhân nào' : 'Chưa có bệnh nhân nào'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {searchTerm ? 'Hãy thử từ khóa khác' : 'Hãy thêm bệnh nhân đầu tiên'}
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <TableContainer component={Paper} sx={{ maxHeight: '60vh' }}>
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
@@ -476,6 +488,7 @@ const ManagePatients: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
+          )}
         </Box>
       </Paper>
 
