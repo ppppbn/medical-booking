@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Card, 
@@ -48,8 +48,12 @@ const AppointmentDetails: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const navigate = useNavigate();
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [actionDialog, setActionDialog] = useState<{ open: boolean; type: 'CANCEL' | 'CONFIRM' | 'COMPLETE' | 'DELETE' | null }>({
+    open: false,
+    type: null
+  });
 
   useEffect(() => {
     const fetchAppointment = async () => {
@@ -71,15 +75,33 @@ const AppointmentDetails: React.FC = () => {
     fetchAppointment();
   }, [id]);
 
-  const handleCancelSubmit = async () => {
-    if (!appointment) return;
+  const handleActionSubmit = async () => {
+    if (!appointment || !actionDialog.type) return;
     try {
-      await appointmentsService.cancelAppointment(appointment.id);
-      setAppointment(prev => prev ? { ...prev, status: 'CANCELLED' } : prev);
-      setCancelDialogOpen(false);
+      if (actionDialog.type === 'DELETE') {
+        await appointmentsService.deleteAppointment(appointment.id);
+        navigate('/admin/appointments');
+        return;
+      }
+
+      let newStatus = '';
+      if (actionDialog.type === 'CANCEL') newStatus = 'CANCELLED';
+      if (actionDialog.type === 'CONFIRM') newStatus = 'CONFIRMED';
+      if (actionDialog.type === 'COMPLETE') newStatus = 'COMPLETED';
+
+      if (newStatus) {
+        if (actionDialog.type === 'CANCEL') {
+          await appointmentsService.cancelAppointment(appointment.id);
+        } else {
+          await appointmentsService.updateAppointment(appointment.id, { status: newStatus });
+        }
+        setAppointment(prev => prev ? { ...prev, status: newStatus } : prev);
+      }
+      
+      setActionDialog({ open: false, type: null });
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.error || 'Không thể hủy lịch hẹn');
+      alert(err.response?.data?.error || 'Thao tác thất bại');
     }
   };
 
@@ -141,15 +163,34 @@ const AppointmentDetails: React.FC = () => {
           {/* Actions */}
           <Box sx={{ mb: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             {user?.role === USER_ROLES.PATIENT && canPatientCancel && (
-              <Button variant="outlined" color="error" onClick={() => setCancelDialogOpen(true)}>
+              <Button variant="outlined" color="error" onClick={() => setActionDialog({ open: true, type: 'CANCEL' })}>
                 Hủy lịch hẹn
               </Button>
             )}
             
-            {user?.role === USER_ROLES.ADMIN && appointment.status !== 'CANCELLED' && appointment.status !== 'COMPLETED' && (
-              <Button variant="outlined" color="error" onClick={() => setCancelDialogOpen(true)}>
-                Hủy lịch hẹn (Admin)
-              </Button>
+            {user?.role === USER_ROLES.ADMIN && (
+              <>
+                {appointment.status === 'PENDING' && (
+                  <Button variant="contained" color="success" onClick={() => setActionDialog({ open: true, type: 'CONFIRM' })}>
+                    Xác nhận
+                  </Button>
+                )}
+                {appointment.status === 'CONFIRMED' && (
+                  <Button variant="contained" color="success" onClick={() => setActionDialog({ open: true, type: 'COMPLETE' })}>
+                    Đánh dấu hoàn thành
+                  </Button>
+                )}
+                {(appointment.status === 'PENDING' || appointment.status === 'CONFIRMED') && (
+                  <Button variant="outlined" color="error" onClick={() => setActionDialog({ open: true, type: 'CANCEL' })}>
+                    Hủy lịch hẹn
+                  </Button>
+                )}
+                {appointment.status !== 'COMPLETED' && (
+                  <Button variant="outlined" color="error" onClick={() => setActionDialog({ open: true, type: 'DELETE' })}>
+                    Xóa lịch hẹn
+                  </Button>
+                )}
+              </>
             )}
 
             {user?.role === USER_ROLES.DOCTOR && canDoctorUpdate && (
@@ -228,18 +269,30 @@ const AppointmentDetails: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Cancel Dialog for Patient / Admin */}
-      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
-        <DialogTitle>Hủy lịch hẹn</DialogTitle>
+      {/* Action Dialog for Patient / Admin */}
+      <Dialog open={actionDialog.open} onClose={() => setActionDialog({ open: false, type: null })}>
+        <DialogTitle>
+          {actionDialog.type === 'CANCEL' ? 'Hủy lịch hẹn' :
+           actionDialog.type === 'DELETE' ? 'Xóa lịch hẹn' :
+           actionDialog.type === 'CONFIRM' ? 'Xác nhận lịch hẹn' :
+           'Đánh dấu hoàn thành'}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Bạn có chắc chắn muốn hủy lịch hẹn này không? Hành động này không thể hoàn tác.
+            {actionDialog.type === 'CANCEL' ? 'Bạn có chắc chắn muốn hủy lịch hẹn này không? Hành động này không thể hoàn tác.' :
+             actionDialog.type === 'DELETE' ? 'Bạn có chắc chắn muốn xóa lịch hẹn này khỏi hệ thống không? Hành động này không thể hoàn tác.' :
+             actionDialog.type === 'CONFIRM' ? 'Bạn có chắc chắn muốn xác nhận lịch hẹn này?' :
+             'Bạn có chắc chắn muốn đánh dấu lịch hẹn này là đã hoàn thành?'}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCancelDialogOpen(false)}>Đóng</Button>
-          <Button onClick={handleCancelSubmit} color="error" variant="contained">
-            Xác nhận hủy
+          <Button onClick={() => setActionDialog({ open: false, type: null })}>Đóng</Button>
+          <Button 
+            onClick={handleActionSubmit} 
+            color={['CANCEL', 'DELETE'].includes(actionDialog.type || '') ? 'error' : 'success'} 
+            variant="contained"
+          >
+            Xác nhận
           </Button>
         </DialogActions>
       </Dialog>
