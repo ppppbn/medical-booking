@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { 
   Box, 
   Card, 
@@ -10,16 +10,14 @@ import {
   Divider, 
   CircularProgress,
   Button,
-  Paper,
-  IconButton
+  Paper
 } from '@mui/material';
 import { 
   CalendarMonth as CalendarIcon,
   Person as PersonIcon,
   MedicalServices as MedicalIcon,
   AccessTime as TimeIcon,
-  Notes as NotesIcon,
-  ArrowBack as ArrowBackIcon
+  Notes as NotesIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -44,7 +42,6 @@ const statusConfig: Record<string, { label: string; color: 'warning' | 'info' | 
 
 const AppointmentDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { user } = useAuth();
   
   const [appointment, setAppointment] = useState<Appointment | null>(null);
@@ -73,16 +70,6 @@ const AppointmentDetails: React.FC = () => {
 
     fetchAppointment();
   }, [id]);
-
-  const handleBack = () => {
-    if (user?.role === USER_ROLES.PATIENT) {
-      navigate('/appointments');
-    } else if (user?.role === USER_ROLES.DOCTOR) {
-      navigate('/doctor-appointments');
-    } else {
-      navigate('/admin/appointments');
-    }
-  };
 
   const handleCancelSubmit = async () => {
     if (!appointment) return;
@@ -115,9 +102,6 @@ const AppointmentDetails: React.FC = () => {
     return (
       <Box sx={{ p: 3 }}>
         <Typography color="error">{error || 'Không tìm thấy lịch hẹn'}</Typography>
-        <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mt: 2 }}>
-          Quay lại danh sách
-        </Button>
       </Box>
     );
   }
@@ -127,9 +111,6 @@ const AppointmentDetails: React.FC = () => {
   return (
     <Box sx={{ p: 3, maxWidth: 800, margin: '0 auto' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton onClick={handleBack} sx={{ mr: 2 }}>
-          <ArrowBackIcon />
-        </IconButton>
         <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
           Chi tiết Lịch hẹn
         </Typography>

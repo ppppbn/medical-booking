@@ -46,6 +46,7 @@ import {
 import { appointmentsService, Appointment } from '../../services/appointments';
 import { doctorsService, Doctor } from '../../services/doctors';
 import { APPOINTMENT_STATUS } from '../../constants/roles';
+import { useNavigate } from 'react-router-dom';
 
 type Order = 'asc' | 'desc';
 type TabValue = 'all' | 'today' | 'pending' | 'confirmed' | 'completed' | 'cancelled';
@@ -60,6 +61,7 @@ const ManageAppointments: React.FC = () => {
   const [order, setOrder] = useState<Order>('desc');
   const [orderBy, setOrderBy] = useState<keyof Appointment>('date');
   const [tabValue, setTabValue] = useState<TabValue>('all');
+  const navigate = useNavigate();
 
   // Filters
   const [doctorFilter, setDoctorFilter] = useState('');
@@ -458,7 +460,12 @@ const ManageAppointments: React.FC = () => {
               </TableHead>
               <TableBody>
                 {filteredAppointments.map((appointment) => (
-                  <TableRow key={appointment.id} hover>
+                  <TableRow 
+                    key={appointment.id} 
+                    hover
+                    onClick={() => navigate(`/appointments/${appointment.id}`)}
+                    sx={{ cursor: 'pointer' }}
+                  >
                     <TableCell>
                       {new Date(appointment.date).toLocaleDateString('vi-VN')}
                     </TableCell>
@@ -518,11 +525,14 @@ const ManageAppointments: React.FC = () => {
                           <Tooltip title="Xác nhận lịch hẹn">
                             <IconButton
                               size="small"
-                              onClick={() => setStatusDialog({
-                                open: true,
-                                appointment,
-                                newStatus: APPOINTMENT_STATUS.CONFIRMED
-                              })}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStatusDialog({
+                                  open: true,
+                                  appointment,
+                                  newStatus: APPOINTMENT_STATUS.CONFIRMED
+                                });
+                              }}
                               color="success"
                             >
                               <CheckCircleIcon />
@@ -531,11 +541,14 @@ const ManageAppointments: React.FC = () => {
                           <Tooltip title="Hủy lịch hẹn">
                             <IconButton
                               size="small"
-                              onClick={() => setStatusDialog({
-                                open: true,
-                                appointment,
-                                newStatus: APPOINTMENT_STATUS.CANCELLED
-                              })}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStatusDialog({
+                                  open: true,
+                                  appointment,
+                                  newStatus: APPOINTMENT_STATUS.CANCELLED
+                                });
+                              }}
                               color="error"
                             >
                               <CancelIcon />
@@ -548,11 +561,14 @@ const ManageAppointments: React.FC = () => {
                           <Tooltip title="Đánh dấu hoàn thành">
                             <IconButton
                               size="small"
-                              onClick={() => setStatusDialog({
-                                open: true,
-                                appointment,
-                                newStatus: APPOINTMENT_STATUS.COMPLETED
-                              })}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStatusDialog({
+                                  open: true,
+                                  appointment,
+                                  newStatus: APPOINTMENT_STATUS.COMPLETED
+                                });
+                              }}
                               color="success"
                             >
                               <CheckCircleIcon />
@@ -561,11 +577,14 @@ const ManageAppointments: React.FC = () => {
                           <Tooltip title="Hủy lịch hẹn">
                             <IconButton
                               size="small"
-                              onClick={() => setStatusDialog({
-                                open: true,
-                                appointment,
-                                newStatus: APPOINTMENT_STATUS.CANCELLED
-                              })}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStatusDialog({
+                                  open: true,
+                                  appointment,
+                                  newStatus: APPOINTMENT_STATUS.CANCELLED
+                                });
+                              }}
                               color="error"
                             >
                               <CancelIcon />
@@ -577,7 +596,10 @@ const ManageAppointments: React.FC = () => {
                         <Tooltip title="Xóa lịch hẹn">
                           <IconButton
                             size="small"
-                            onClick={() => setDeleteDialog({ open: true, appointment })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteDialog({ open: true, appointment });
+                            }}
                             color="error"
                           >
                             <DeleteIcon />

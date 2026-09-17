@@ -38,6 +38,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { appointmentsService, Appointment } from '../../services/appointments';
 import { APPOINTMENT_STATUS, USER_ROLES } from '../../constants/roles';
 import DoctorStatusDialog from '../Shared/DoctorStatusDialog';
@@ -62,6 +63,7 @@ const DoctorAppointments: React.FC = () => {
     appointment: null
   });
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAppointments();
@@ -330,7 +332,12 @@ const DoctorAppointments: React.FC = () => {
                 </TableHead>
                 <TableBody>
                   {filteredAppointments.map((appointment) => (
-                    <TableRow key={appointment.id} hover>
+                    <TableRow 
+                      key={appointment.id} 
+                      hover
+                      onClick={() => navigate(`/appointments/${appointment.id}`)}
+                      sx={{ cursor: 'pointer' }}
+                    >
                       <TableCell>{formatDate(appointment.date)}</TableCell>
                       <TableCell>{appointment.time}</TableCell>
                       <TableCell>
@@ -360,10 +367,13 @@ const DoctorAppointments: React.FC = () => {
                           <IconButton
                             color="primary"
                             size="small"
-                            onClick={() => setStatusDialog({
-                              open: true,
-                              appointment
-                            })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setStatusDialog({
+                                open: true,
+                                appointment
+                              });
+                            }}
                             title="Cập nhật trạng thái"
                           >
                             <ScheduleIcon />
