@@ -27,6 +27,7 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { patientsService } from '../../services/patients';
 import { appointmentsService } from '../../services/appointments';
 import { APPOINTMENT_STATUS } from '../../constants/roles';
@@ -65,6 +66,7 @@ const MyAppointments: React.FC = () => {
     appointment: null,
   });
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAppointments();
@@ -266,7 +268,12 @@ const MyAppointments: React.FC = () => {
               </TableHead>
                 <TableBody>
                   {filteredAppointments.map((appointment) => (
-                    <TableRow key={appointment.id} hover>
+                    <TableRow 
+                      key={appointment.id} 
+                      hover 
+                      onClick={() => navigate(`/appointments/${appointment.id}`)}
+                      sx={{ cursor: 'pointer' }}
+                    >
                       <TableCell>{formatDate(appointment.date)}</TableCell>
                       <TableCell>{appointment.time}</TableCell>
                       <TableCell>{appointment.doctor.user?.fullName}</TableCell>
