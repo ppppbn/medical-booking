@@ -126,6 +126,13 @@ const Dashboard: React.FC = () => {
             color: 'success'
           },
           {
+            title: 'Quản lý lịch hẹn',
+            description: 'Xem và quản lý tất cả lịch hẹn',
+            icon: <EventIcon />,
+            path: '/admin/appointments',
+            color: 'warning'
+          },
+          {
             title: 'Báo cáo thống kê',
             description: 'Xem báo cáo và thống kê hệ thống',
             icon: <AnalyticsIcon />,
