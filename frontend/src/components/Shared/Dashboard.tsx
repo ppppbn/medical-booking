@@ -131,13 +131,6 @@ const Dashboard: React.FC = () => {
             icon: <AnalyticsIcon />,
             path: '/admin/statistics',
             color: 'info'
-          },
-          {
-            title: 'Cài đặt hệ thống',
-            description: 'Cấu hình và quản lý hệ thống',
-            icon: <SettingsIcon />,
-            path: '/settings',
-            color: 'warning'
           }
         ];
 
