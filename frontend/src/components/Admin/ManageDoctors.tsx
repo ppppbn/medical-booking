@@ -192,6 +192,7 @@ const ManageDoctors: React.FC = () => {
         experience: formData.experience,
         bio: formData.bio,
         fullName: formData.fullName,
+        phone: formData.phone,
       });
       await fetchDoctors();
       setEditDialogOpen(false);

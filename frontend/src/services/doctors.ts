@@ -61,6 +61,7 @@ export const doctorsService = {
     experience?: number;
     bio?: string;
     fullName?: string;
+    phone?: string;
   }): Promise<{ message: string; doctor: Partial<Doctor> }> {
     const response = await axiosInstance.put(`/doctors/${doctorId}`, data);
     return response.data;
