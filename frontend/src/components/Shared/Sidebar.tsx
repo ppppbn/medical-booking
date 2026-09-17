@@ -48,7 +48,7 @@ const sidebarGroups: SidebarGroup[] = [
     items: [
       { label: 'Bảng điều khiển', path: '/dashboard', icon: <DashboardIcon /> },
       { label: 'Thống kê', path: '/admin/statistics', icon: <BarChartIcon /> },
-      { label: 'Quản lý Chuyên ngành', path: '/admin/departments', icon: <DomainIcon /> },
+      { label: 'Quản lý Chuyên khoa', path: '/admin/departments', icon: <DomainIcon /> },
       { label: 'Quản lý Bác sĩ', path: '/admin/doctors', icon: <MedicalServicesIcon /> },
       { label: 'Quản lý Bệnh nhân', path: '/admin/patients', icon: <PeopleIcon /> },
       { label: 'Quản lý Lịch hẹn', path: '/admin/appointments', icon: <CalendarMonthIcon /> },

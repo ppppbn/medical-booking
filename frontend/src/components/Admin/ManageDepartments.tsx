@@ -116,9 +116,9 @@ const ManageDepartments: React.FC = () => {
       await fetchData();
       setAddDialogOpen(false);
       resetForm();
-      showSnackbar('Thêm chuyên ngành thành công!', 'success');
+      showSnackbar('Thêm chuyên khoa thành công!', 'success');
     } catch (error: any) {
-      showSnackbar(error.response?.data?.error || 'Không thể thêm chuyên ngành', 'error');
+      showSnackbar(error.response?.data?.error || 'Không thể thêm chuyên khoa', 'error');
     }
   };
 
@@ -130,9 +130,9 @@ const ManageDepartments: React.FC = () => {
       setEditDialogOpen(false);
       setSelectedDepartment(null);
       resetForm();
-      showSnackbar('Cập nhật chuyên ngành thành công!', 'success');
+      showSnackbar('Cập nhật chuyên khoa thành công!', 'success');
     } catch (error: any) {
-      showSnackbar(error.response?.data?.error || 'Không thể cập nhật chuyên ngành', 'error');
+      showSnackbar(error.response?.data?.error || 'Không thể cập nhật chuyên khoa', 'error');
     }
   };
 
@@ -141,7 +141,7 @@ const ManageDepartments: React.FC = () => {
     try {
       await departmentsService.updateDepartment(selectedDepartment.id, { isActive: !selectedDepartment.isActive });
       await fetchData();
-      showSnackbar(`Đã ${selectedDepartment.isActive ? 'vô hiệu hóa' : 'kích hoạt'} chuyên ngành thành công`, 'success');
+      showSnackbar(`Đã ${selectedDepartment.isActive ? 'vô hiệu hóa' : 'kích hoạt'} chuyên khoa thành công`, 'success');
     } catch (error: any) {
       showSnackbar(error.response?.data?.error || 'Không thể thay đổi trạng thái', 'error');
     } finally {
@@ -174,7 +174,7 @@ const ManageDepartments: React.FC = () => {
       const updatedDept = await departmentsService.getDepartments().then(res => res.departments.find(d => d.id === selectedDepartment.id));
       if (updatedDept) setSelectedDepartment(updatedDept);
 
-      showSnackbar('Đã gỡ bác sĩ khỏi chuyên ngành', 'success');
+      showSnackbar('Đã gỡ bác sĩ khỏi chuyên khoa', 'success');
     } catch (error: any) {
       showSnackbar(error.response?.data?.error || 'Không thể gỡ bác sĩ', 'error');
     }
@@ -231,14 +231,14 @@ const ManageDepartments: React.FC = () => {
         <Box sx={{ p: 3, pb: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h4" gutterBottom>
-              Quản lý Chuyên ngành
+              Quản lý Chuyên khoa
             </Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => setAddDialogOpen(true)}
             >
-              Thêm chuyên ngành
+              Thêm chuyên khoa
             </Button>
           </Box>
 
@@ -249,7 +249,7 @@ const ManageDepartments: React.FC = () => {
                   {departments.length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Tổng số chuyên ngành
+                  Tổng số chuyên khoa
                 </Typography>
               </CardContent>
             </Card>
@@ -259,7 +259,7 @@ const ManageDepartments: React.FC = () => {
                   {departments.filter(d => d.isActive).length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Chuyên ngành đang hoạt động
+                  Chuyên khoa đang hoạt động
                 </Typography>
               </CardContent>
             </Card>
@@ -269,7 +269,7 @@ const ManageDepartments: React.FC = () => {
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="Tìm kiếm theo tên chuyên ngành..."
+              placeholder="Tìm kiếm theo tên chuyên khoa..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
@@ -287,7 +287,7 @@ const ManageDepartments: React.FC = () => {
           {filteredDepartments.length === 0 ? (
             <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', px: 3 }}>
               <Typography variant="h6" color="text.secondary">
-                Không tìm thấy chuyên ngành nào
+                Không tìm thấy chuyên khoa nào
               </Typography>
             </Box>
           ) : (
@@ -295,7 +295,7 @@ const ManageDepartments: React.FC = () => {
               <Table stickyHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Tên chuyên ngành</TableCell>
+                    <TableCell>Tên chuyên khoa</TableCell>
                     <TableCell>Mô tả</TableCell>
                     <TableCell align="center">Số lượng bác sĩ</TableCell>
                     <TableCell>Trạng thái</TableCell>
@@ -352,7 +352,7 @@ const ManageDepartments: React.FC = () => {
         </Box>
       </Paper>
 
-      <Tooltip title="Thêm chuyên ngành">
+      <Tooltip title="Thêm chuyên khoa">
         <Fab
           color="primary"
           sx={{ position: 'fixed', bottom: 16, right: 16 }}
@@ -364,12 +364,12 @@ const ManageDepartments: React.FC = () => {
 
       {/* Add Dialog */}
       <Dialog open={addDialogOpen} onClose={() => { setAddDialogOpen(false); resetForm(); }} maxWidth="sm" fullWidth>
-        <DialogTitle>Thêm chuyên ngành mới</DialogTitle>
+        <DialogTitle>Thêm chuyên khoa mới</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <TextField
               fullWidth
-              label="Tên chuyên ngành"
+              label="Tên chuyên khoa"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -392,12 +392,12 @@ const ManageDepartments: React.FC = () => {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onClose={() => { setEditDialogOpen(false); resetForm(); }} maxWidth="sm" fullWidth>
-        <DialogTitle>Chỉnh sửa chuyên ngành</DialogTitle>
+        <DialogTitle>Chỉnh sửa chuyên khoa</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <TextField
               fullWidth
-              label="Tên chuyên ngành"
+              label="Tên chuyên khoa"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -500,7 +500,7 @@ const ManageDepartments: React.FC = () => {
       <Dialog open={confirmToggleOpen} onClose={() => setConfirmToggleOpen(false)}>
         <DialogTitle>Xác nhận {selectedDepartment?.isActive ? 'vô hiệu hóa' : 'kích hoạt'}</DialogTitle>
         <DialogContent>
-          Bạn có chắc chắn muốn {selectedDepartment?.isActive ? 'vô hiệu hóa' : 'kích hoạt'} chuyên ngành <strong>{selectedDepartment?.name}</strong>?
+          Bạn có chắc chắn muốn {selectedDepartment?.isActive ? 'vô hiệu hóa' : 'kích hoạt'} chuyên khoa <strong>{selectedDepartment?.name}</strong>?
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmToggleOpen(false)}>Hủy</Button>
